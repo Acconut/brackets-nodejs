@@ -9,6 +9,18 @@ var http = require("http"),
 var httpServer = http.createServer(function() {});
 httpServer.listen(config.port, config.host);
 
+/** --- CHILDPROCESS --- **/
+var Cp = {
+    "child" : {},
+    "run" : function(path) {
+        this.terminate();
+        this.child = spawn("node", [path]);
+    },
+    "terminate" : function() {
+        if(this.child.kill) this.child.kill();
+    }
+};
+
 /** --- WEBSOCKET --- **/
 var ws = new websocketServer({
     httpServer: httpServer
@@ -21,6 +33,7 @@ ws.on("request", function(request) {
         return;
     }
     
+    log("Connection accepted");
     var connection = request.accept(null, request.origin);
     
     connection.on("message", function(data) {
@@ -28,6 +41,10 @@ ws.on("request", function(request) {
         var msg = JSON.parse(data.utf8Data);
         if(!msg.type || !msg.params) return;
         if(Handler[msg.type]) Handler[msg.type](msg.params, connection); 
+    });
+    
+    connection.on("close", function(code) {
+        Cp.terminate();
     });
 });
 
@@ -38,9 +55,11 @@ var Handler = {
         // Remove file protocol
         var path = p.url.substr(8);
         
-        var child = spawn("node", [path]);
-        child.stdout.on("data", dataEvent);
-        child.stderr.on("data", dataEvent);
+        log("Running %s", path);
+        
+        Cp.run(path);
+        Cp.child.stdout.on("data", dataEvent);
+        Cp.child.stderr.on("data", dataEvent);
         
         function dataEvent(data) {
             var data = data.toString();
@@ -51,5 +70,8 @@ var Handler = {
                 }
             }));
         }
+    },
+    "terminate" : function(p, c) {
+        Cp.terminate();
     }
 };
