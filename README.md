@@ -10,7 +10,7 @@ The extension will automaticly generate a new menu item (`Run (Node.js)`) in the
 By clicking it (or the shortcut `Ctrl-Alt-N`) will open the terminal panel at the bottom, which logs the output of your node.js programm.
 
 ## Installation
-\*cough\* [Look at the wiki](https://github.com/Acconut/brackets-nodejs/wiki/Installatione) \*cough\*
+\*cough\* [Look at the wiki](https://github.com/Acconut/brackets-nodejs/wiki/Installation) \*cough\*
 
 Either you clone this repo or download the ZIP and put it in `{BRACKETS}/extensions/user`.
 Then you have to start a websocket with
