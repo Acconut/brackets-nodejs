@@ -1,7 +1,3 @@
-/*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4,
-maxerr: 50, node: true */
-/*global */
-
 (function () {
     "use strict";
     
@@ -12,16 +8,16 @@ maxerr: 50, node: true */
 		config 			= require("./config.json"),
 		server			= null,
 		EOL				= "\n";
-		
-
+	
     exports.init = function() {
 		
 		server = http.createServer(function(req, res) {
 			var query = url.parse(req.url, true);
 			
+			// Path in query is required and only or eventsource
 			if(query && query.path && req.headers.accept === "text/event-stream") {
 				
-				var modulePath = "" + decodeURIComponent(query.query.path) + "",
+				var modulePath = decodeURIComponent(query.query.path),
 					args = query.args || [],
 					command = "node",
 					dir = path.dirname(decodeURIComponent(query.query.path));
@@ -42,6 +38,15 @@ maxerr: 50, node: true */
 					"Cache-Control": "no-cache"
 				});
 				
+				// Send data to the eventsource
+				var send = function(data) {
+					var d = data.toString().split(EOL);
+					for(var i = 0, l = d.length; i < l; i++) {
+						res.write("data: " + d[i] + EOL + EOL + EOL);
+					}
+				}
+					
+				
 				try {
 					var child = spawn(
 						command,
@@ -52,13 +57,6 @@ maxerr: 50, node: true */
 						}
 					);
 					
-					var send = function(data) {
-						var d = data.toString().split(EOL);
-						for(var i = 0, l = d.length; i < l; i++) {
-							res.write("data: " + d[i] + EOL + EOL + EOL);
-						}
-					}
-					
 					
 					child.stdout.on("data", send);
 					child.stderr.on("data", send);
@@ -68,11 +66,19 @@ maxerr: 50, node: true */
 					});
 					
 				} catch(err) {
-					res.write("data: " + err);
+					send(err.stack);
 					res.end();
 				}
 				
+				// Kill child process at end of request
+				// if it's still running
+				req.on("close", function() {
+					if(child.disconnect) child.disconnect();
+				});
+				
 			} else {
+				
+				// Response with some basic text
 				res.writeHead(200, { "Content-Type": "text/plain" });
 				res.end("This is just a event-server");
 			}
@@ -82,5 +88,4 @@ maxerr: 50, node: true */
 			server.listen(config.port);
 		} finally {}
 	};
-	
 }());
