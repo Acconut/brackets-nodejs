@@ -1,18 +1,12 @@
 #Brackets-Node.js
-... is an extension for Brackets to run Node.js files directly from Brackets.
+... is an extension for Brackets to run Node.js or NPM files directly from Brackets.
 
-![Extension in work](http://img10.myimg.de/nodejsbracketskompressfed3a.png)
+![Extension in work](http://img14.myimg.de/bracketsnodejskompb2b74.png)
 
 ## Usage
-\*cough\* [Look at the wiki](https://github.com/Acconut/brackets-nodejs/wiki/Usage) \*cough\*
-
-The extension will automaticly generate a new menu item (`Run (Node.js)`) in the section `Debug`.
-By clicking it (or the shortcut `Ctrl-Alt-N`) will open the terminal panel at the bottom, which logs the output of your node.js programm.
+Use the new added menu `Node.js`.
 
 ## Installation
-\*cough\* [Look at the wiki](https://github.com/Acconut/brackets-nodejs/wiki/Installation) \*cough\*
+`File` > `Install Extension...` > `http://github.com/Acconut/brackets-nodejs` > `Install`
 
-Either you clone this repo or download the ZIP and put it in `{BRACKETS}/extensions/user`.
-Then you have to start a websocket with
-`node socket.js`.
-Ready to rumble!
+And boom.
