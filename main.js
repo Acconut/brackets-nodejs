@@ -18,11 +18,21 @@ define(function (require, exports, module) {
 		LS_PREFIX		= "node-";
     
 	
+	/** --- SHORTCUTS FOR LOCALSTORAGE --- **/
+	function get(name) {
+		return localStorage.getItem(LS_PREFIX + name);
+	}
+	function set(name, value) {
+		return localStorage.setItem(LS_PREFIX + name, value);
+	}
+	function rm(name) {
+		return localStorage.removeItem(LS_PREFIX + name);
+	}
+	
     /** --- CONFIG --- **/
     var config = JSON.parse(require("text!config.json"));
     
 	/** --- CONNECT TO NODE --- **/
-
     nodeConnection.connect(true).then(function () {
 		nodeConnection.loadDomains(
 			[ExtensionUtils.getModulePath(module, "server.js")],
@@ -44,14 +54,15 @@ define(function (require, exports, module) {
 			var str = "http://" + config.host + ":" + config.port + "/?path=" + encodeURIComponent(path);
 			if(npm) {
 				str += "&npm=" + npm;
-				if(localStorage.getItem(LS_PREFIX + "npm")) str += "&npm_path=" + encodeURIComponent(localStorage.getItem(LS_PREFIX + "npm"));
+				var npmPath = get("npm");
+				if(npmPath) str += "&npm_path=" + encodeURIComponent(npmPath);
 			} else {
-				if(localStorage.getItem(LS_PREFIX + "node")) str += "&node_path=" + encodeURIComponent(localStorage.getItem(LS_PREFIX + "node"));
+				var nodePath = get("node");
+				if(npmPath) str += "&node_path=" + encodeURIComponent(nodePath);
 			}
 			for(var i = 0, l = args.length; i < l; i++) {
 				str += "args[]=" + encodeURIComponent(args[i]);
 			}
-			
 			
 			if(clear !== false) {
 				Panel.show();
@@ -59,6 +70,7 @@ define(function (require, exports, module) {
 			}
 			return str;
 		},
+		
 		"new": function(args, npm, clear) {
 			if(source && source.close) source.close();
 			
@@ -77,9 +89,7 @@ define(function (require, exports, module) {
 				Panel.write(msg.data);
 			}, false);
 			source.addEventListener("error", function() {
-				
 				source.close();
-				source = null;
 				Panel.write("Programm exited.");
 			}, false);
 		},
@@ -114,28 +124,35 @@ define(function (require, exports, module) {
 	var Modal = {
 		show: function() {
 			Dialogs.showModalDialog(NODE_DIALOG_ID);
-			$("." + NODE_DIALOG_ID + ".instance .save").click(function() {
+			this.get("save").click(function() {
 				
-				var node = $("." + NODE_DIALOG_ID + ".instance .node").val(),
-					npm = $("." + NODE_DIALOG_ID + ".instance .npm").val();
+				var node = this.get("node", true).val(),
+					npm = this.get("npm", true).val();
 				
 				if(node && node !== "") {
-					localStorage.setItem(LS_PREFIX + "node", node);
-					$("." + NODE_DIALOG_ID + ".template .node").val(node);
+					set("node", node);
+					this.get("node").val(node);
 				} else {
-					localStorage.removeItem(LS_PREFIX + "node");
-					$("." + NODE_DIALOG_ID + ".template .node").val("");
+					rm("node");
+					this.get("node").val("");
 				}
 				
 				if(npm && npm !== "") {
-					localStorage.setItem(LS_PREFIX + "npm", npm);
-					$("." + NODE_DIALOG_ID + ".template .npm").val(npm);
+					set("npm", npm)
+					this.get("npm").val("");
 				} else {
-					localStorage.removeItem(LS_PREFIX + "npm");
-					$("." + NODE_DIALOG_ID + ".template .npm").val("");
+					rm("npm");
+					this.get("npm").val("");
 				}
 				
 			});
+		},
+		
+		"get": function(c, i) {
+			var str  = "." + NODE_DIALOG_ID + ".";
+				str += (i) ? "instance" : "template";
+				str += "." + c
+			return $(str);
 		}
 	}
     
@@ -178,8 +195,13 @@ define(function (require, exports, module) {
         ConnectionManager.exit();
     });
     
-	$("body").append($(Mustache.render(require("text!modal.html"))));
-	if(localStorage.getItem(LS_PREFIX + "node") !== null) $("." + NODE_DIALOG_ID + ".template .node").val(localStorage.getItem(LS_PREFIX + "node"));
-	if(localStorage.getItem(LS_PREFIX + "npm") !== null) $("." + NODE_DIALOG_ID + ".template .npm").val(localStorage.getItem(LS_PREFIX + "npm"));
-	
+	(function() {
+		$("body").append($(Mustache.render(require("text!modal.html"))));
+		
+		var npmPath = get("npm"),
+			nodePath = get("node");
+		if(nodePath !== null) $("." + NODE_DIALOG_ID + ".template .node").val(nodePath);
+		if(npmPath !== null) $("." + NODE_DIALOG_ID + ".template .npm").val(npmPath);
+		
+	})();
 });
