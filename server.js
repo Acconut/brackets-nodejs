@@ -37,7 +37,10 @@ maxerr: 50, node: true */
 					args.pop();
 				} else if(query.query.node_path) command = query.query.node_path;
 				
-				res.writeHead(200, { "Content-Type": "text/event-stream" });
+				res.writeHead(200, {
+					"Content-Type": "text/event-stream",
+					"Cache-Control": "no-cache"
+				});
 				
 				try {
 					var child = spawn(
@@ -50,7 +53,10 @@ maxerr: 50, node: true */
 					);
 					
 					var send = function(data) {
-						res.write("data: " + data.toString() + EOL + EOL);
+						var d = data.toString().split(EOL);
+						for(var i = 0, l = d.length; i < l; i++) {
+							res.write("data: " + d[i] + EOL + EOL + EOL);
+						}
 					}
 					
 					
@@ -76,4 +82,5 @@ maxerr: 50, node: true */
 			server.listen(config.port);
 		} finally {}
 	};
+	
 }());
