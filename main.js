@@ -9,6 +9,7 @@ define(function (require, exports, module) {
 		ExtensionUtils  = brackets.getModule("utils/ExtensionUtils"),
 		NodeConnection  = brackets.getModule("utils/NodeConnection"),
 		Dialogs			= brackets.getModule("widgets/Dialogs"),
+		ansi			= require("ansi"),
 		nodeConnection  = new NodeConnection(),
 		NodeMenuID		= "node-menu",
 		NodeMenu		= Menus.addMenu("Node.js", NodeMenuID),
@@ -114,7 +115,7 @@ define(function (require, exports, module) {
             },
             "write" : function(str) {
                 var e = document.createElement("div");
-                e.textContent = str;
+                e.innerHTML = ansi(str.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
                 document.querySelector("#" + this.id + " .table-container pre").appendChild(e);
             }
         };

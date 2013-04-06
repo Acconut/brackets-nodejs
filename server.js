@@ -42,7 +42,11 @@
 				var send = function(data) {
 					var d = data.toString().split(EOL);
 					for(var i = 0, l = d.length; i < l; i++) {
-						res.write("data: " + d[i] + EOL + EOL + EOL);
+						
+						// Support for ansi colors and text decorations
+						var di = d[i].replace(/\x1B\[/g, "\\x1B[");
+						
+						res.write("data: " + di + EOL + EOL + EOL);
 					}
 				}
 					
