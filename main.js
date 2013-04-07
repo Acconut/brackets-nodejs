@@ -100,26 +100,61 @@ define(function (require, exports, module) {
 	};
 	
     /** --- PANEL --- **/
-    var Panel = {
-            "id" : "brackets-nodejs-terminal",
-            "show" : function() {
-                document.getElementById(this.id).style.display = "block";
-                EditorManager.resizeEditor();
-            },
-            "hide" : function() {
-                document.getElementById(this.id).style.display = "none";
-                EditorManager.resizeEditor();
-            },
-            "clear" : function() {
-                document.querySelector("#" + this.id + " .table-container pre").innerHTML = null;
-            },
-            "write" : function(str) {
-                var e = document.createElement("div");
-                e.innerHTML = ansi(str.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
-                document.querySelector("#" + this.id + " .table-container pre").appendChild(e);
-            }
-        };
     $(".content").append(require("text!panel.html"));
+    var Panel = {
+		id : "brackets-nodejs-terminal",
+		panel: null,
+		height: 201,
+		
+		get: function(qs) {
+			return this.panel.querySelector(qs);
+		},
+		
+		show : function() {
+			this.panel.style.display = "block";
+			EditorManager.resizeEditor();
+		},
+		hide : function() {
+			this.panel.style.display = "none";
+			EditorManager.resizeEditor();
+		},
+		clear : function() {
+			this.pre.innerHTML = null;
+		},
+		write : function(str) {
+			var e = document.createElement("div");
+			e.innerHTML = ansi(str.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
+			this.pre.appendChild(e);
+		},
+		
+		mousemove: function(e) {
+			
+			var h = Panel.height + (Panel.y - e.pageY);
+			Panel.panel.style.height = h + "px";
+			EditorManager.resizeEditor();
+			
+		},
+		mouseup: function(e) {
+		
+			document.removeEventListener("mousemove", Panel.mousemove);
+			document.removeEventListener("mouseup", Panel.mouseup);
+			
+			Panel.height = Panel.height + (Panel.y - e.pageY);
+			
+		},
+		y: 0
+    };
+	Panel.panel = document.getElementById(Panel.id);
+	Panel.pre = Panel.get(".table-container pre");
+	Panel.get(".resize").addEventListener("mousedown", function(e) {
+		
+		Panel.y = e.pageY;
+		
+		document.addEventListener("mousemove", Panel.mousemove);
+		document.addEventListener("mouseup", Panel.mouseup);
+		
+	});
+	
 	
 	/** --- MODAL --- **/
 	var Modal = {
