@@ -3,6 +3,7 @@ console.log("Secound line");
 console.log("Third");
 
 if(process.env.npm_package_name) console.log("I'm %s", process.env.npm_package_name);
+console.log(process.execPath);
 
 var red, blue, reset;
 red   = '\u001b[31m';
