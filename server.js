@@ -6,6 +6,7 @@
 		spawn			= require("child_process").spawn,
 		path			= require("path"),
 		config 			= require("./config.json"),
+		which			= require("which"),
 		server			= null,
 		EOL				= "\n";
 	
@@ -19,11 +20,15 @@
 				
 				var modulePath = decodeURIComponent(query.query.path),
 					args = query.args || [],
-					command = "node",
+					command = "",
 					dir = path.dirname(decodeURIComponent(query.query.path));
 				
-				// Get path to node on mac
-				if(process.platform === "darwin") command = which.sync("node");
+				// Get path via which
+				try {;
+					command = which.sync("node")
+				} catch(e) {
+					commadn = "node";
+				}
 				
 				args.unshift(modulePath);
 				
