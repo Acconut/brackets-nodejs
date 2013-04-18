@@ -59,7 +59,7 @@ define(function (require, exports, module) {
 				if(npmPath) str += "&npm_path=" + encodeURIComponent(npmPath);
 			} else {
 				var nodePath = get("node");
-				if(npmPath) str += "&node_path=" + encodeURIComponent(nodePath);
+				if(nodePath) str += "&node_path=" + encodeURIComponent(nodePath);
 			}
 			for(var i = 0, l = args.length; i < l; i++) {
 				str += "args[]=" + encodeURIComponent(args[i]);
@@ -159,36 +159,40 @@ define(function (require, exports, module) {
 	/** --- MODAL --- **/
 	var Modal = {
 		show: function() {
-			Dialogs.showModalDialog(NODE_DIALOG_ID);
-			this.get("save").click(function() {
+			Dialogs.showModalDialog(NODE_DIALOG_ID).done(function(id) {
 				
-				var node = this.get("node", true).val(),
-					npm = this.get("npm", true).val();
+				// Only saving
+				if(id !== "save") return;
+				
+				var node = get("tmp-node"),
+					npm = get("tmp-npm");
 				
 				if(node && node !== "") {
+					console.log(1)
 					set("node", node);
-					this.get("node").val(node);
 				} else {
+					console.log(2);
 					rm("node");
-					this.get("node").val("");
 				}
 				
 				if(npm && npm !== "") {
 					set("npm", npm)
-					this.get("npm").val("");
 				} else {
 					rm("npm");
-					this.get("npm").val("");
 				}
 				
 			});
+			
+			Modal.get("node", true).value = get("node");
+			Modal.get("npm", true).value = get("npm");
+
 		},
 		
 		"get": function(c, i) {
 			var str  = "." + NODE_DIALOG_ID + ".";
 				str += (i) ? "instance" : "template";
-				str += "." + c
-			return $(str);
+				str += " ." + c;
+			return document.querySelector(str);
 		}
 	}
     
@@ -231,13 +235,5 @@ define(function (require, exports, module) {
         ConnectionManager.exit();
     });
     
-	(function() {
-		$("body").append($(Mustache.render(require("text!modal.html"))));
-		
-		var npmPath = get("npm"),
-			nodePath = get("node");
-		if(nodePath !== null) $("." + NODE_DIALOG_ID + ".template .node").val(nodePath);
-		if(npmPath !== null) $("." + NODE_DIALOG_ID + ".template .npm").val(npmPath);
-		
-	})();
+	$("body").append($(Mustache.render(require("text!modal.html"))));
 });

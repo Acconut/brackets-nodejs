@@ -7,14 +7,14 @@
 			<tr>
 				<td>
 					<div class="field-container">
-						<label>Path to Node binary: <input type="text" placeholder="(leave empty for global node command)" class="node" style="width: 530px"></label>
+						<label>Path to Node binary: <input type="text" placeholder="(leave empty for global node command)" onchange="localStorage['node-tmp-node'] = this.value" class="node" style="width: 530px"></label>
 					</div>
 				</td>
 			</tr>
 			<tr>
 				<td>
 					<div class="field-container">
-						<label>Path to NPM binary: <input type="text" placeholder="(leave empty for global npm command)" class="npm" style="width: 530px"></label>
+						<label>Path to NPM binary: <input type="text" placeholder="(leave empty for global npm command)" onchange="localStorage['node-tmp-npm'] = this.value" class="npm" style="width: 530px"></label>
 					</div>
 				</td>
 			</tr>
