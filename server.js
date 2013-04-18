@@ -22,6 +22,8 @@
 					command = "node",
 					dir = path.dirname(decodeURIComponent(query.query.path));
 				
+				// Get path to node on mac
+				if(process.platform === "darwin") command = which.sync("node");
 				
 				args.unshift(modulePath);
 				
