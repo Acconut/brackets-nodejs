@@ -167,19 +167,11 @@ define(function (require, exports, module) {
 				var node = get("tmp-node"),
 					npm = get("tmp-npm");
 				
-				if(node && node !== "") {
-					console.log(1)
-					set("node", node);
-				} else {
-					console.log(2);
-					rm("node");
-				}
+				if(node && node !== "") set("node", node);
+				else rm("node");
 				
-				if(npm && npm !== "") {
-					set("npm", npm)
-				} else {
-					rm("npm");
-				}
+				if(npm && npm !== "") set("npm", npm)
+				else rm("npm");
 				
 			});
 			
