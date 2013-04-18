@@ -24,10 +24,10 @@
 					dir = path.dirname(decodeURIComponent(query.query.path));
 				
 				// Get path via which
-				try {;
-					command = which.sync("node")
+				try {
+					command = which.sync("node");
 				} catch(e) {
-					commadn = "node";
+					command = "node";
 				}
 				
 				args.unshift(modulePath);
