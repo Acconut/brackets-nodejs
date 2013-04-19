@@ -242,8 +242,8 @@ define(function (require, exports, module) {
 					// Only saving
 					if(id !== "save") return;
 					
-					var node = get("tmp-node"),
-						npm = get("tmp-npm");
+					var node = nodeInput.value,
+						npm = npmInput.value;
 					
 					if(node && node !== "") set("node", node);
 					else rm("node");
@@ -253,8 +253,11 @@ define(function (require, exports, module) {
 					
 				});
 				
-				Modal.settings.get("node", true).value = get("node");
-				Modal.settings.get("npm", true).value = get("npm");
+				// It's important to get the elements after the modal is rendered but before the done event
+				var nodeInput = Modal.settings.get("node", true),
+					npmInput = Modal.settings.get("npm", true);
+				nodeInput.value = get("node");
+				npmInput.value = get("npm");
 	
 			},
 			
@@ -304,7 +307,7 @@ define(function (require, exports, module) {
 					
 				});
 				
-				// It's important to set the elements after the modal is rendered but before the done event
+				// It's important to get the elements after the modal is rendered but before the done event
 				var name = Modal.install.get("name", true),
 					save = Modal.install.get("save", true);
 				
