@@ -19,9 +19,10 @@
 			if(query && query.path && req.headers.accept === "text/event-stream") {
 				
 				var modulePath = decodeURIComponent(query.query.path),
-					args = query.args || [],
+					args = query.query["args[]"] || [],
 					command = "",
-					dir = path.dirname(decodeURIComponent(query.query.path));
+					dir = path.dirname(decodeURIComponent(query.query.path)),
+					npmCmd = query.query.npm;
 				
 				// Get path via which
 				try {
@@ -30,14 +31,14 @@
 					command = "node";
 				}
 				
-				args.unshift(modulePath);
+				// Add path to module
+				if(!npmCmd) args.unshift(modulePath);
 				
-				// Add npm suppoert
-				if(query.query.npm && ["start", "stop", "test", "install"].indexOf(query.query.npm) > -1) {
+				// Add npm support
+				if(npmCmd && ["start", "stop", "test", "install"].indexOf(npmCmd) > -1) {
 					command = "npm";
 					if(query.query.npm_path) command = query.query.npm_path;
-					args.unshift(query.query.npm);
-					args.pop();
+					args.unshift(npmCmd);
 				} else if(query.query.node_path) command = query.query.node_path;
 				
 				res.writeHead(200, {
@@ -56,7 +57,6 @@
 						res.write("data: " + di + EOL + EOL + EOL);
 					}
 				}
-					
 				
 				try {
 					var child = spawn(

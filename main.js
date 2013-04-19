@@ -16,6 +16,7 @@ define(function (require, exports, module) {
 		source			= null,
 		connected		= false,
 		NODE_DIALOG_ID	= "node-settings-dialog",
+		NODE_INSTALL_DIALOG_ID = "node-install-dialog",
 		LS_PREFIX		= "node-";
     
 	
@@ -62,7 +63,7 @@ define(function (require, exports, module) {
 				if(nodePath) str += "&node_path=" + encodeURIComponent(nodePath);
 			}
 			for(var i = 0, l = args.length; i < l; i++) {
-				str += "args[]=" + encodeURIComponent(args[i]);
+				str += "&args[]=" + encodeURIComponent(args[i]);
 			}
 			
 			if(clear !== false) {
@@ -100,7 +101,7 @@ define(function (require, exports, module) {
 	};
 	
     /** --- PANEL --- **/
-    $(".content").append(require("text!panel.html"));
+    $(".content").append(require("text!html/panel.html"));
     var Panel = {
 		id : "brackets-nodejs-terminal",
 		panel: null,
@@ -157,6 +158,9 @@ define(function (require, exports, module) {
 	
 	
 	/** --- MODAL --- **/
+	$("body").append($(Mustache.render(require("text!html/modal.html"))));
+	$("body").append($(Mustache.render(require("text!html/modal-install.html"))));
+	
 	var Modal = {
 		show: function() {
 			Dialogs.showModalDialog(NODE_DIALOG_ID).done(function(id) {
@@ -180,6 +184,40 @@ define(function (require, exports, module) {
 
 		},
 		
+		install: {
+			show: function() {
+				
+				Dialogs.showModalDialog(NODE_INSTALL_DIALOG_ID).done(function(id) {
+					
+					// Only saving
+					if(id !== "ok") return;
+					
+					if(name.value == "") {
+						Dialogs.showModalDialog(Dialogs.DIALOG_ID_ERROR, "Error", "Please enter a module name");
+						return;
+					}
+					
+					var s = save.checked ? "--save" : "";
+					
+					ConnectionManager.new([name.value, s], "install");
+					
+				});
+				
+				var name = Modal.install.get("name", true),
+					save = Modal.install.get("save", true);
+				
+				
+			},
+			
+			"get": function(c, i) {
+				var str  = "." + NODE_INSTALL_DIALOG_ID + ".";
+					str += (i) ? "instance" : "template";
+					str += " ." + c;
+				return document.querySelector(str);
+			}
+		},
+		
+		
 		"get": function(c, i) {
 			var str  = "." + NODE_DIALOG_ID + ".";
 				str += (i) ? "instance" : "template";
@@ -194,6 +232,7 @@ define(function (require, exports, module) {
 		RUN_NPM_STOP_CMD_ID = "brackets-nodejs.run_npm_stop",
 		RUN_NPM_TEST_CMD_ID = "brackets-nodejs.run_npm_test",
 		RUN_NPM_INSTALL_CMD_ID = "brackets-nodejs.run_npm_install",
+		INSTALL_CMD_ID = "brackets-nodejs.install",
 		CONFIG_CMD_ID = "brackets-nodejs.config";
     CommandManager.register("Run", RUN_CMD_ID, function() {
 		ConnectionManager.new([]);
@@ -210,6 +249,9 @@ define(function (require, exports, module) {
 	CommandManager.register("Run as npm install", RUN_NPM_INSTALL_CMD_ID, function() {
 		ConnectionManager.new([], "install");
 	});
+	CommandManager.register("Install module...", INSTALL_CMD_ID, function() {
+		Modal.install.show();
+	});
 	CommandManager.register("Configuration...", CONFIG_CMD_ID, function() {
 		Modal.show();
 		
@@ -221,6 +263,8 @@ define(function (require, exports, module) {
 	NodeMenu.addMenuItem(RUN_NPM_TEST_CMD_ID);
 	NodeMenu.addMenuItem(RUN_NPM_INSTALL_CMD_ID);
 	NodeMenu.addMenuDivider();
+	NodeMenu.addMenuItem(INSTALL_CMD_ID);
+	NodeMenu.addMenuDivider();
 	NodeMenu.addMenuItem(CONFIG_CMD_ID);
 	
     /** --- TERMINATE --- **/
@@ -231,6 +275,4 @@ define(function (require, exports, module) {
     document.querySelector("#" + Panel.id + " .close-terminate").addEventListener("click", function() {
         ConnectionManager.exit();
     });
-    
-	$("body").append($(Mustache.render(require("text!modal.html"))));
 });
