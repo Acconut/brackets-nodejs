@@ -18,29 +18,6 @@
 			// Path in query is required and only or eventsource
 			if(query && query.path && req.headers.accept === "text/event-stream") {
 				
-				var modulePath = decodeURIComponent(query.query.path),
-					args = query.query["args[]"] || [],
-					command = "",
-					dir = path.dirname(decodeURIComponent(query.query.path)),
-					npmCmd = query.query.npm;
-				
-				// Get path via which
-				try {
-					command = which.sync("node");
-				} catch(e) {
-					command = "node";
-				}
-				
-				// Add path to module
-				if(!npmCmd) args.unshift(modulePath);
-				
-				// Add npm support
-				if(npmCmd && ["start", "stop", "test", "install"].indexOf(npmCmd) > -1) {
-					command = "npm";
-					if(query.query.npm_path) command = query.query.npm_path;
-					args.unshift(npmCmd);
-				} else if(query.query.node_path) command = query.query.node_path;
-				
 				res.writeHead(200, {
 					"Content-Type": "text/event-stream",
 					"Cache-Control": "no-cache"
@@ -59,6 +36,32 @@
 				}
 				
 				try {
+				
+					var modulePath = decodeURIComponent(query.query.path),
+						args = query.query["args[]"] || [],
+						command = "",
+						dir = path.dirname(decodeURIComponent(query.query.path)),
+						npmCmd = query.query.npm;
+					
+					// Get path via which
+					try {
+						command = which.sync("node");
+					} catch(e) {
+						command = "node";
+					}
+					
+					// Add path to module
+					if(!npmCmd) args.unshift(modulePath);
+					
+					// Add npm support
+					if(npmCmd && ["start", "stop", "test", "install"].indexOf(npmCmd) > -1) {
+						command = "npm";
+						if(query.query.npm_path) command = query.query.npm_path;
+						args.unshift(npmCmd);
+					} else if(query.query.node_path) command = query.query.node_path;
+					
+					
+					
 					var child = spawn(
 						command,
 						args,
