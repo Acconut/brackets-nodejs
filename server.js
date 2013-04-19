@@ -33,7 +33,7 @@
 				args.unshift(modulePath);
 				
 				// Add npm suppoert
-				if(query.query.npm && ["start", "stop", "test"].indexOf(query.query.npm) > -1) {
+				if(query.query.npm && ["start", "stop", "test", "install"].indexOf(query.query.npm) > -1) {
 					command = "npm";
 					if(query.query.npm_path) command = query.query.npm_path;
 					args.unshift(query.query.npm);

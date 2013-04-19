@@ -193,6 +193,7 @@ define(function (require, exports, module) {
 		RUN_NPM_START_CMD_ID = "brackets-nodejs.run_npm_start",
 		RUN_NPM_STOP_CMD_ID = "brackets-nodejs.run_npm_stop",
 		RUN_NPM_TEST_CMD_ID = "brackets-nodejs.run_npm_test",
+		RUN_NPM_INSTALL_CMD_ID = "brackets-nodejs.run_npm_install",
 		CONFIG_CMD_ID = "brackets-nodejs.config";
     CommandManager.register("Run", RUN_CMD_ID, function() {
 		ConnectionManager.new([]);
@@ -206,6 +207,9 @@ define(function (require, exports, module) {
 	CommandManager.register("Run as npm test", RUN_NPM_TEST_CMD_ID, function() {
 		ConnectionManager.new([], "test");
 	});
+	CommandManager.register("Run as npm install", RUN_NPM_INSTALL_CMD_ID, function() {
+		ConnectionManager.new([], "install");
+	});
 	CommandManager.register("Configuration...", CONFIG_CMD_ID, function() {
 		Modal.show();
 		
@@ -215,6 +219,7 @@ define(function (require, exports, module) {
 	NodeMenu.addMenuItem(RUN_NPM_START_CMD_ID);
 	NodeMenu.addMenuItem(RUN_NPM_STOP_CMD_ID);
 	NodeMenu.addMenuItem(RUN_NPM_TEST_CMD_ID);
+	NodeMenu.addMenuItem(RUN_NPM_INSTALL_CMD_ID);
 	NodeMenu.addMenuDivider();
 	NodeMenu.addMenuItem(CONFIG_CMD_ID);
 	
