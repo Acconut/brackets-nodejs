@@ -1,16 +1,16 @@
 (function () {
-    "use strict";
-    
-    var http			= require("http"),
-		url				= require("url"),
-		spawn			= require("child_process").spawn,
-		path			= require("path"),
-		config 			= require("./config.json"),
-		which			= require("which"),
-		server			= null,
-		EOL				= "\n";
+	"use strict";
+
+	var http   = require("http"),
+	    url    = require("url"),
+	    spawn  = require("child_process").spawn,
+	    path   = require("path"),
+	    config = require("./config.json"),
+	    which  = require("which"),
+	    server = null,
+	    EOL    = "\n";
 	
-    exports.init = function() {
+	exports.init = function() {
 		
 		server = http.createServer(function(req, res) {
 			var query = url.parse(req.url, true);
