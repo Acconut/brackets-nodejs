@@ -218,33 +218,38 @@ define(function (require, exports, module) {
         ConnectionManager.exit();
     });
 	
-	
-	/**
-	 * Modals (settings and install)
-	 */
-	$("body").append($(Mustache.render(require("text!html/modal-settings.html"))));
-	$("body").append($(Mustache.render(require("text!html/modal-install.html"))));
-	
-	var Modal = {
-		
-		/**
+    var Dialog = {
+        /**
 		 * The settings modal is used to configure the path to node's and npm's binary
 		 * HTML : html/modal-settings.html
 		 */
 		settings: {
+            
+            /**
+             * HTML put inside the dialog
+             */
+            html: require("text!html/modal-settings.html"),
 			
 			/**
 			 * Opens up the modal
 			 */
 			show: function() {
-				Dialogs.showModalDialog(NODE_SETTINGS_DIALOG_ID).done(function(id) {
+                Dialogs.showModalDialog(
+                    NODE_SETTINGS_DIALOG_ID, // ID the specify the dialog
+                    "Node.js-Configuration", // Title
+                    this.html,               // HTML-Content
+                    [                        // Buttons
+                        {className: Dialogs.DIALOG_BTN_CLASS_PRIMARY, id: Dialogs.DIALOG_BTN_OK, text: "Save"},
+                        {className: Dialogs.DIALOG_BTN_CLASS_NORMAL, id: Dialogs.DIALOG_BTN_CANCEL, text: "Cancel"}
+                    ]
+                ).done(function(id) {
 					
 					// Only saving
-					if(id !== "save") return;
+					if(id !== "ok") return;
 					
 					var node = nodeInput.value,
 						npm = npmInput.value;
-					
+					console.log(node, npm);
 					if(node && node !== "") set("node", node);
 					else rm("node");
 					
@@ -254,42 +259,39 @@ define(function (require, exports, module) {
 				});
 				
 				// It's important to get the elements after the modal is rendered but before the done event
-				var nodeInput = Modal.settings.get("node", true),
-					npmInput = Modal.settings.get("npm", true);
+				var nodeInput = document.querySelector("." + NODE_SETTINGS_DIALOG_ID + " .node"),
+					npmInput = document.querySelector("." + NODE_SETTINGS_DIALOG_ID + " .npm");
 				nodeInput.value = get("node");
 				npmInput.value = get("npm");
 	
-			},
-			
-			
-			/**
-			 * Get an element inside the settings modal
-			 *
-			 * @param: classname
-			 * @param: (real) instance or just tempate
-			 * return: Element
-			 */
-			// This need to be inside quotes since get is a reserved word
-			"get": function(c, i) {
-				var str  = "." + NODE_SETTINGS_DIALOG_ID + ".";
-					str += (i) ? "instance" : "template";
-					str += " ." + c;
-				return document.querySelector(str);
 			}
-		},
-		
+        },
+        
 		/**
 		 * The install modal is used to install a module inside the directory of the current file
 		 * HTML: html/modal-install.html
 		 */
 		install: {
 			
+            /**
+             * HTML put inside the dialog
+             */
+            html: require("text!html/modal-install.html"),
+            
 			/**
 			 * Opens up the modal
 			 */
 			show: function() {
 				
-				Dialogs.showModalDialog(NODE_INSTALL_DIALOG_ID).done(function(id) {
+				Dialogs.showModalDialog(
+                    NODE_INSTALL_DIALOG_ID,
+                    "Install module",
+                    this.html,
+                    [
+                        {className: Dialogs.DIALOG_BTN_CLASS_PRIMARY, id: Dialogs.DIALOG_BTN_OK, text: "Install"},
+                        {className: Dialogs.DIALOG_BTN_CLASS_NORMAL, id: Dialogs.DIALOG_BTN_CANCEL, text: "Cancel"}
+                    ]
+                ).done(function(id) {
 					
 					// Only saving
 					if(id !== "ok") return;
@@ -308,29 +310,14 @@ define(function (require, exports, module) {
 				});
 				
 				// It's important to get the elements after the modal is rendered but before the done event
-				var name = Modal.install.get("name", true),
-					save = Modal.install.get("save", true);
+				var name = document.querySelector("." + NODE_INSTALL_DIALOG_ID + " .name"),
+					save = document.querySelector("." + NODE_INSTALL_DIALOG_ID + " .save");
 				
 				
-			},
-						
-			/**
-			 * Get an element inside the install modal
-			 *
-			 * @param: classname
-			 * @param: (real) instance or just tempate
-			 * return: Element
-			 */
-			// This need to be inside quotes since get is a reserved word
-			"get": function(c, i) {
-				var str  = "." + NODE_INSTALL_DIALOG_ID + ".";
-					str += (i) ? "instance" : "template";
-					str += " ." + c;
-				return document.querySelector(str);
 			}
-		}
-	}
-    
+        }
+    };
+
     /**
 	 * Menu
 	 */
@@ -357,10 +344,10 @@ define(function (require, exports, module) {
 		ConnectionManager.new([], "install");
 	});
 	CommandManager.register("Install module...", INSTALL_CMD_ID, function() {
-		Modal.install.show();
+		Dialog.install.show();
 	});
 	CommandManager.register("Configuration...", CONFIG_CMD_ID, function() {
-		Modal.settings.show();
+		Dialog.settings.show();
 		
 	});
 	
