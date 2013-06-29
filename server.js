@@ -47,7 +47,7 @@
 					try {
 						command = which.sync("node");
 					} catch(e) {
-						command = "node";
+						command = process.execPath || "node";
 					}
 					
 					// Add path to module
@@ -94,12 +94,11 @@
 				
 				// Response with some basic text
 				res.writeHead(200, { "Content-Type": "text/plain" });
-				res.end("This is just a event-server");
+				res.end("This is just an event-server");
 			}
 			
 		});
-		try {
-			server.listen(config.port);
-		} finally {}
+		
+        server.listen(config.port);
 	};
 }());
