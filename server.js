@@ -87,7 +87,7 @@
 				// Kill child process at end of request
 				// if it's still running
 				req.on("close", function() {
-					if(child.disconnect) child.disconnect();
+					child.kill('SIGTERM');
 				});
 				
 			} else {
