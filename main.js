@@ -14,7 +14,6 @@ define(function (require, exports, module) {
 		NodeMenuID				= "node-menu",
 		NodeMenu				= Menus.addMenu("Node.js", NodeMenuID),
 		source					= null,
-		connected				= false,
 		NODE_SETTINGS_DIALOG_ID	= "node-settings-dialog",
 		NODE_INSTALL_DIALOG_ID 	= "node-install-dialog",
 		LS_PREFIX				= "node-";
@@ -47,9 +46,12 @@ define(function (require, exports, module) {
 			true
 		).then(
 			function () {
-				connected = true;
-			},
-			function () { /* Failed to connect */ }
+				console.log("[brackets-nodejs] Connected to nodejs");
+			}
+    ).fail(
+      function () {
+        console.log("[brackets-nodejs] Failed to connect to nodejs. The server may be up because of another instance");
+      }
 		);
 	});
 	
@@ -105,16 +107,14 @@ define(function (require, exports, module) {
 			if(source && source.close) source.close();
 			
 			// Server should be running
-			if(connected) {
-				source = new EventSource(
-					ConnectionManager.buildUrl(
-						DocumentManager.getCurrentDocument().file.fullPath,
-						args,
-						npm,
-						clear
-					)
-				);
-			}
+      source = new EventSource(
+        ConnectionManager.buildUrl(
+          DocumentManager.getCurrentDocument().file.fullPath,
+          args,
+          npm,
+          clear
+        )
+      );
 			
 			source.addEventListener("message", function(msg) {
 				Panel.write(msg.data);
@@ -129,7 +129,7 @@ define(function (require, exports, module) {
 		 * Close the current connection if server is started
 		 */
 		exit: function() {
-			if(connected) source.close();
+		  source.close();
 		}
 	};
 	

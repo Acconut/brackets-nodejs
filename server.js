@@ -99,6 +99,25 @@
 			
 		});
 		
-        server.listen(config.port);
+    server.listen(config.port);
+    
+    // Another server may be running on this port
+    // inside another brackets instance.
+    // Instead of crashing the process and causing
+    // the interface to throw errors keep
+    // running and smile :)
+    process.on("uncaughtException", function(err) {
+      if(err.code == "EADDRINUSE") {
+        console.log("Server unable to listen. Address already in use");
+        
+        // Keep the event loop running using some noop-stuff
+        setInterval(function() {}, 60 * 1000);
+        return;
+      }
+      
+      throw err;
+    });
 	};
+  
+  //exports.init();
 }());
