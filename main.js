@@ -351,7 +351,7 @@ define(function (require, exports, module) {
 		
 	});
 	
-    NodeMenu.addMenuItem(RUN_CMD_ID, "Ctrl-Alt-N");
+    NodeMenu.addMenuItem(RUN_CMD_ID, "Alt-N");
 	NodeMenu.addMenuDivider();
 	NodeMenu.addMenuItem(RUN_NPM_START_CMD_ID);
 	NodeMenu.addMenuItem(RUN_NPM_STOP_CMD_ID);
