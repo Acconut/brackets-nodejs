@@ -1,0 +1,18 @@
+{
+  "name": "brackets-nodejs",
+  "title": "Node.js bindings",
+  "description": "Execute node scripts and common npm commands inside Brackets.",
+  "homepage": "https://github.com/Acconut/brackets-nodejs",
+  "version": "1.0.0",
+  "license": "MIT",
+  "engines": {
+    "brackets": ">=0.30.0"
+  },
+  "keywords": [
+    "node",
+    "node.js",
+    "execute",
+    "command",
+    "npm"
+  ]
+}
