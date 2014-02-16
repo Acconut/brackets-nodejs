@@ -81,7 +81,7 @@ define(function (require, exports, module) {
             // Build url
             var url = "http://" + config.host + ":" + config.port + "/?command=" + encodeURIComponent(command);
             if(useCwd) {
-                url += "&cwd=" + doc.file.parentPath;
+                url += "&cwd=" + encodeURIComponent(doc.file.parentPath);
             }
             
             // Server should be running
