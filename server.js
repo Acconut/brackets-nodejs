@@ -59,6 +59,7 @@
                     });
 
                 } catch(err) {
+                    send("Internal brackets-nodejs error (please report on Github):");
                     send(err.stack);
                     res.end();
                 }
