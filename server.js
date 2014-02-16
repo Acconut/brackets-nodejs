@@ -4,9 +4,7 @@
     var http = require("http"),
         url = require("url"),
         exec = require("child_process").exec,
-        path = require("path"),
         config = require("./config.json"),
-        which = require("which"),
         server = null,
         EOL = "\n";
 
@@ -33,7 +31,7 @@
 
                         res.write("data: " + di + EOL + EOL + EOL);
                     }
-                }
+                };
 
                 try {
 
