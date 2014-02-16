@@ -16,6 +16,7 @@ define(function (require, exports, module) {
         source = null,
         NODE_SETTINGS_DIALOG_ID = "node-settings-dialog",
         NODE_INSTALL_DIALOG_ID = "node-install-dialog",
+        NODE_EXEC_DIALOG_ID = "node-exec-dialog",
         LS_PREFIX = "node-";
 
 
@@ -63,60 +64,28 @@ define(function (require, exports, module) {
     var ConnectionManager = {
 
         /**
-         * Builds a URL to be used inside EventSource
-         *
-         * @param: File's path to be executed
-         * @param (optional): Arguments
-         * @param (optional): One of the supported npm commands (start, stop, test, install) or empty for default node
-         * @param (optional): Clear the terminal (Default: true)
-         * @return: String
-         * @api: private
-         */
-        buildUrl: function (path, args, npm, clear) {
-            args = args || [];
-            npm = npm || false;
-
-            var str = "http://" + config.host + ":" + config.port + "/?path=" + encodeURIComponent(path);
-            if (npm) {
-                str += "&npm=" + npm;
-                var npmPath = get("npm");
-                if (npmPath) str += "&npm_path=" + encodeURIComponent(npmPath);
-            } else {
-                var nodePath = get("node");
-                if (nodePath) str += "&node_path=" + encodeURIComponent(nodePath);
-            }
-            for (var i = 0, l = args.length; i < l; i++) {
-                str += "&args[]=" + encodeURIComponent(args[i]);
-            }
-
-            if (clear !== false) {
-                Panel.show();
-                Panel.clear();
-            }
-            return str;
-        },
-
-        /**
          * Creates a new EventSource
          *
-         * @param (optional): Arguments
-         * @param (optional): One of the supported npm commands (start, stop, test, install) or empty for default node
-         * @param (optional): Clear the terminal (Default: true)
+         * @param (optional): Command name
+         * @param (optional): Execute in the current working directory
          */
         // This need to be inside quotes since new is a reserved word
-        "new": function (args, npm, clear) {
+        "new": function (command, useCwd) {
 
             if (source && source.close) source.close();
-
+            
+            // Current document
+            var doc = DocumentManager.getCurrentDocument();
+            if(!doc.file.isFile) return;
+            
+            // Build url
+            var url = "http://" + config.host + ":" + config.port + "/?command=" + encodeURIComponent(command);
+            if(useCwd) {
+                url += "&cwd=" + doc.file.parentPath;
+            }
+            
             // Server should be running
-            source = new EventSource(
-                ConnectionManager.buildUrl(
-                    DocumentManager.getCurrentDocument().file.fullPath,
-                    args,
-                    npm,
-                    clear
-                )
-            );
+            source = new EventSource(url);
 
             source.addEventListener("message", function (msg) {
                 Panel.write(msg.data);
@@ -125,6 +94,41 @@ define(function (require, exports, module) {
                 source.close();
                 Panel.write("Programm exited.");
             }, false);
+            
+            Panel.show();
+            Panel.clear();
+        },
+        
+        newNpm: function (command) {
+            
+            var npmBin = get("npm");
+            if(!npmBin) {
+                npmBin = "npm";
+            } else {
+                // Add quotation because windows paths can contain spaces
+                npmBin = '"' + npmBin + '"';
+            }
+            
+            this.new(npmBin + " " + command, true);
+            
+        },
+        
+        newNode: function () {
+            
+            var nodeBin = get("node");
+            if(!nodeBin) {
+                nodeBin = "node";
+            } else {
+                // Add quotation because windows paths can contain spaces
+                nodeBin = '"' + nodeBin + '"';
+            }
+            
+            // Current document
+            var doc = DocumentManager.getCurrentDocument();
+            if(!doc.file.isFile) return;
+            
+            this.new(nodeBin + " " + doc.file.fullPath, true);
+            
         },
 
         /**
@@ -222,7 +226,7 @@ define(function (require, exports, module) {
 
     var Dialog = {
         /**
-         * The settings modal is used to configure the path to node's and npm's binary
+         * The settings modal is used to configure the path to node's and node's binary
          * HTML : html/modal-settings.html
          */
         settings: {
@@ -318,13 +322,66 @@ define(function (require, exports, module) {
                     // Should it be saved to package.json
                     var s = save.checked ? "--save" : "";
 
-                    ConnectionManager.new([name.value, s], "install");
+                    ConnectionManager.npm("install " + name.value + " " + s);
 
                 });
 
                 // It's important to get the elements after the modal is rendered but before the done event
                 var name = document.querySelector("." + NODE_INSTALL_DIALOG_ID + " .name"),
                     save = document.querySelector("." + NODE_INSTALL_DIALOG_ID + " .save");
+
+
+            }
+        },
+        
+        /**
+         * The exec modal is used to execute a command
+         * HTML: html/modal-install.html
+         */
+        exec: {
+
+            /**
+             * HTML put inside the dialog
+             */
+            html: require("text!html/modal-exec.html"),
+
+            /**
+             * Opens up the modal
+             */
+            show: function () {
+
+                Dialogs.showModalDialog(
+                    NODE_EXEC_DIALOG_ID,
+                    "Execute command",
+                    this.html, [{
+                        className: Dialogs.DIALOG_BTN_CLASS_PRIMARY,
+                        id: Dialogs.DIALOG_BTN_OK,
+                        text: "Run"
+                    }, {
+                        className: Dialogs.DIALOG_BTN_CLASS_NORMAL,
+                        id: Dialogs.DIALOG_BTN_CANCEL,
+                        text: "Cancel"
+                    }]
+                ).done(function (id) {
+
+                    if (id !== "ok") return;
+
+                    // Command musn't be empty
+                    if (command.value == "") {
+                        Dialogs.showModalDialog(Dialogs.DIALOG_ID_ERROR, "Error", "Please enter a command");
+                        return;
+                    }
+
+                    // Should it be executed in the current working directory
+                    var useCwd = !!cwd.checked;
+
+                    ConnectionManager.new(command.value, useCwd);
+
+                });
+
+                // It's important to get the elements after the modal is rendered but before the done event
+                var command = document.querySelector("." + NODE_EXEC_DIALOG_ID + " .command"),
+                    cwd = document.querySelector("." + NODE_EXEC_DIALOG_ID + " .cwd");
 
 
             }
@@ -335,6 +392,7 @@ define(function (require, exports, module) {
      * Menu
      */
     var RUN_CMD_ID = "brackets-nodejs.run",
+        EXEC_CMD_ID = "brackets-nodejs.exec",
         RUN_NPM_START_CMD_ID = "brackets-nodejs.run_npm_start",
         RUN_NPM_STOP_CMD_ID = "brackets-nodejs.run_npm_stop",
         RUN_NPM_TEST_CMD_ID = "brackets-nodejs.run_npm_test",
@@ -342,19 +400,22 @@ define(function (require, exports, module) {
         INSTALL_CMD_ID = "brackets-nodejs.install",
         CONFIG_CMD_ID = "brackets-nodejs.config";
     CommandManager.register("Run", RUN_CMD_ID, function () {
-        ConnectionManager.new([]);
+        ConnectionManager.newNode();
+    });
+    CommandManager.register("Execute command", EXEC_CMD_ID, function() {
+        Dialog.exec.show();
     });
     CommandManager.register("Run as npm start", RUN_NPM_START_CMD_ID, function () {
-        ConnectionManager.new([], "start");
+        ConnectionManager.newNpm("start");
     });
     CommandManager.register("Run as npm stop", RUN_NPM_STOP_CMD_ID, function () {
-        ConnectionManager.new([], "stop");
+        ConnectionManager.newNpm("stop");
     });
     CommandManager.register("Run as npm test", RUN_NPM_TEST_CMD_ID, function () {
-        ConnectionManager.new([], "test");
+        ConnectionManager.newNpm("test");
     });
     CommandManager.register("Run as npm install", RUN_NPM_INSTALL_CMD_ID, function () {
-        ConnectionManager.new([], "install");
+        ConnectionManager.newNpm("install");
     });
     CommandManager.register("Install module...", INSTALL_CMD_ID, function () {
         Dialog.install.show();
@@ -365,6 +426,7 @@ define(function (require, exports, module) {
     });
 
     NodeMenu.addMenuItem(RUN_CMD_ID, "Alt-N");
+    NodeMenu.addMenuItem(EXEC_CMD_ID);
     NodeMenu.addMenuDivider();
     NodeMenu.addMenuItem(RUN_NPM_START_CMD_ID);
     NodeMenu.addMenuItem(RUN_NPM_STOP_CMD_ID);
