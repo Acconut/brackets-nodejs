@@ -95,7 +95,7 @@ define(function (require, exports, module) {
                 Panel.write("Programm exited.");
             }, false);
             
-            Panel.show();
+            Panel.show(command);
             Panel.clear();
         },
         
@@ -147,6 +147,7 @@ define(function (require, exports, module) {
 
         id: "brackets-nodejs-terminal",
         panel: null,
+        commandTitle: null,
         height: 201,
 
         get: function (qs) {
@@ -156,8 +157,9 @@ define(function (require, exports, module) {
         /**
          * Basic functionality
          */
-        show: function () {
+        show: function (command) {
             this.panel.style.display = "block";
+            this.commandTitle.textContent = command;
             EditorManager.resizeEditor();
         },
         hide: function () {
@@ -203,6 +205,7 @@ define(function (require, exports, module) {
 
     // Still resizing
     Panel.panel = document.getElementById(Panel.id);
+    Panel.commandTitle = Panel.get(".cmd");
     Panel.pre = Panel.get(".table-container pre");
     Panel.get(".resize").addEventListener("mousedown", function (e) {
 
