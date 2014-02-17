@@ -62,15 +62,21 @@ define(function (require, exports, module) {
      * The ConnectionManager helps to build and run request to execute a file on the serverside
      */
     var ConnectionManager = {
-
+        
+        last: {
+            command: null,
+            cwd: null
+        },
+        
         /**
          * Creates a new EventSource
          *
          * @param (optional): Command name
          * @param (optional): Execute in the current working directory
+         * @param (optional): Directory to use as cwd
          */
         // This need to be inside quotes since new is a reserved word
-        "new": function (command, useCwd) {
+        "new": function (command, useCurrentCwd, cwd) {
 
             if (source && source.close) source.close();
             
@@ -80,9 +86,20 @@ define(function (require, exports, module) {
             
             // Build url
             var url = "http://" + config.host + ":" + config.port + "/?command=" + encodeURIComponent(command);
-            if(useCwd) {
-                url += "&cwd=" + encodeURIComponent(doc.file.parentPath);
+            var dir = null;
+            if(useCurrentCwd) {
+                dir = doc.file.parentPath;
+            } else if(cwd) {
+                dir = cwd;
             }
+            
+            if(dir !== null) {
+                url += "&cwd=" + encodeURIComponent(dir);
+            }
+            
+            // Store the last command and cwd
+            this.last.command = command;
+            this.last.cwd = dir;
             
             // Server should be running
             source = new EventSource(url);
@@ -128,6 +145,15 @@ define(function (require, exports, module) {
             if(!doc.file.isFile) return;
             
             this.new(nodeBin + " " + doc.file.fullPath, true);
+            
+        },
+        
+        rerun: function () {
+            
+            var last = this.last;
+            if(last.command === null) return;
+            
+            this.new(last.command, false, last.cwd);
             
         },
 
@@ -217,14 +243,17 @@ define(function (require, exports, module) {
     });
 
     /**
-     * Termination buttons
+     * Terminal buttons
      */
-    document.querySelector("#" + Panel.id + " .close-close").addEventListener("click", function () {
+    document.querySelector("#" + Panel.id + " .action-close").addEventListener("click", function () {
         ConnectionManager.exit();
         Panel.hide();
     });
-    document.querySelector("#" + Panel.id + " .close-terminate").addEventListener("click", function () {
+    document.querySelector("#" + Panel.id + " .action-terminate").addEventListener("click", function () {
         ConnectionManager.exit();
+    });
+    document.querySelector("#" + Panel.id + " .action-rerun").addEventListener("click", function () {
+        ConnectionManager.rerun();
     });
 
     var Dialog = {
