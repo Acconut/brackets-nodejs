@@ -362,7 +362,8 @@ define(function (require, exports, module) {
                 var name = document.querySelector("." + NODE_INSTALL_DIALOG_ID + " .name"),
                     save = document.querySelector("." + NODE_INSTALL_DIALOG_ID + " .save");
 
-
+                name.focus();
+                
             }
         },
         
@@ -414,7 +415,8 @@ define(function (require, exports, module) {
                 // It's important to get the elements after the modal is rendered but before the done event
                 var command = document.querySelector("." + NODE_EXEC_DIALOG_ID + " .command"),
                     cwd = document.querySelector("." + NODE_EXEC_DIALOG_ID + " .cwd");
-
+                
+                command.focus();
 
             }
         }
