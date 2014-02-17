@@ -109,7 +109,7 @@ define(function (require, exports, module) {
             }, false);
             source.addEventListener("error", function () {
                 source.close();
-                Panel.write("Programm exited.");
+                Panel.write("Program exited.");
             }, false);
             
             Panel.show(command);
