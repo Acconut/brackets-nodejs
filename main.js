@@ -144,7 +144,7 @@ define(function (require, exports, module) {
             var doc = DocumentManager.getCurrentDocument();
             if(!doc.file.isFile) return;
             
-            this.new(nodeBin + " " + doc.file.fullPath, true);
+            this.new(nodeBin + ' "' + doc.file.fullPath + '"', true);
             
         },
         
