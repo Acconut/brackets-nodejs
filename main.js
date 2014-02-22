@@ -234,16 +234,24 @@ define(function (require, exports, module) {
 
         keyup: function (e) {
             if (e.keyCode === 38) {
+                if (ConnectionManager.last.length === 0) {
+                    return;
+                }
                 if (Panel.currentLastIndex >= ConnectionManager.last.length) {
                     Panel.currentLastIndex = ConnectionManager.last.length - 1;
                 }
                 if (Panel.currentLastIndex <= 0) {
                     Panel.currentLastIndex = 0;
                 }
+
+
                 var cmd = ConnectionManager.last[Panel.currentLastIndex].command;
                 Panel.get(".cmd-value").value = cmd;
                 Panel.currentLastIndex++;
             } else if (e.keyCode === 40) {
+                if (ConnectionManager.last.length === 0) {
+                    return;
+                }
                 if (Panel.currentLastIndex >= ConnectionManager.last.length) {
                     Panel.currentLastIndex = ConnectionManager.last.length - 1;
                 }
