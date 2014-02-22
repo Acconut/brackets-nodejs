@@ -151,15 +151,6 @@ define(function (require, exports, module) {
 
         },
 
-        rerun: function () {
-
-            var last = this.last;
-            if (last[0].command === null) return;
-
-            this.new(last[0].command, false, last[0].cwd);
-
-        },
-
         execute: function () {
             var cmd = Panel.get(".cmd-value").value;
             ConnectionManager.new(cmd, true, null);
@@ -168,10 +159,12 @@ define(function (require, exports, module) {
         /**
          * Close the current connection if server is started
          */
-        exit: function () {
+        exit: function (terminate) {
             if (source)
                 source.close();
-            Panel.hide();
+            if (terminate) {
+                Panel.write('Terminal command aborted.')
+            }
         }
     };
 
@@ -297,10 +290,7 @@ define(function (require, exports, module) {
         Panel.hide();
     });
     document.querySelector("#" + Panel.id + " .action-terminate").addEventListener("click", function () {
-        ConnectionManager.exit();
-    });
-    document.querySelector("#" + Panel.id + " .action-rerun").addEventListener("click", function () {
-        ConnectionManager.rerun();
+        ConnectionManager.exit(true);
     });
     document.querySelector("#" + Panel.id + " .action-execute").addEventListener("click", function () {
         ConnectionManager.execute();
