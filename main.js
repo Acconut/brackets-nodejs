@@ -160,6 +160,11 @@ define(function (require, exports, module) {
 
         },
 
+        execute: function () {
+            var cmd = Panel.get(".cmd-value").value;
+            ConnectionManager.new(cmd, true, null);
+        },
+
         /**
          * Close the current connection if server is started
          */
@@ -262,7 +267,7 @@ define(function (require, exports, module) {
                 Panel.get(".cmd-value").value = cmd;
                 Panel.currentLastIndex--;
             } else if (e.keyCode === 13) {
-                execute();
+                ConnectionManager.execute();
             }
         },
         y: 0,
@@ -299,13 +304,8 @@ define(function (require, exports, module) {
         ConnectionManager.rerun();
     });
     document.querySelector("#" + Panel.id + " .action-execute").addEventListener("click", function () {
-        execute();
+        ConnectionManager.execute();
     });
-
-    function execute() {
-        var cmd = Panel.get(".cmd-value").value;
-        ConnectionManager.new(cmd, true, null);
-    }
 
     var Dialog = {
         /**
@@ -417,67 +417,12 @@ define(function (require, exports, module) {
 
             }
         },
-
-        /**
-         * The exec modal is used to execute a command
-         * HTML: html/modal-install.html
-         */
-        exec: {
-
-            /**
-             * HTML put inside the dialog
-             */
-            html: require("text!html/modal-exec.html"),
-
-            /**
-             * Opens up the modal
-             */
-            show: function () {
-
-                Dialogs.showModalDialog(
-                    NODE_EXEC_DIALOG_ID,
-                    "Execute command",
-                    this.html, [{
-                        className: Dialogs.DIALOG_BTN_CLASS_PRIMARY,
-                        id: Dialogs.DIALOG_BTN_OK,
-                        text: "Run"
-                    }, {
-                        className: Dialogs.DIALOG_BTN_CLASS_NORMAL,
-                        id: Dialogs.DIALOG_BTN_CANCEL,
-                        text: "Cancel"
-                    }]
-                ).done(function (id) {
-
-                    if (id !== "ok") return;
-
-                    // Command musn't be empty
-                    if (command.value == "") {
-                        Dialogs.showModalDialog(Dialogs.DIALOG_ID_ERROR, "Error", "Please enter a command");
-                        return;
-                    }
-
-                    // Should it be executed in the current working directory
-                    var useCwd = !! cwd.checked;
-
-                    ConnectionManager.new(command.value, useCwd);
-
-                });
-
-                // It's important to get the elements after the modal is rendered but before the done event
-                var command = document.querySelector("." + NODE_EXEC_DIALOG_ID + " .command"),
-                    cwd = document.querySelector("." + NODE_EXEC_DIALOG_ID + " .cwd");
-
-                command.focus();
-
-            }
-        }
     };
 
     /**
      * Menu
      */
     var RUN_CMD_ID = "brackets-nodejs.run",
-        EXEC_CMD_ID = "brackets-nodejs.exec",
         RUN_NPM_START_CMD_ID = "brackets-nodejs.run_npm_start",
         RUN_NPM_STOP_CMD_ID = "brackets-nodejs.run_npm_stop",
         RUN_NPM_TEST_CMD_ID = "brackets-nodejs.run_npm_test",
@@ -488,9 +433,6 @@ define(function (require, exports, module) {
 
     CommandManager.register("Run", RUN_CMD_ID, function () {
         ConnectionManager.newNode();
-    });
-    CommandManager.register("Execute command", EXEC_CMD_ID, function () {
-        Dialog.exec.show();
     });
     CommandManager.register("Run as npm start", RUN_NPM_START_CMD_ID, function () {
         ConnectionManager.newNpm("start");
@@ -517,7 +459,6 @@ define(function (require, exports, module) {
     });
 
     NodeMenu.addMenuItem(RUN_CMD_ID, "Alt-N");
-    //NodeMenu.addMenuItem(EXEC_CMD_ID);
     NodeMenu.addMenuItem(SHOW_TERMINAL, "Alt-T");
     NodeMenu.addMenuDivider();
     NodeMenu.addMenuItem(RUN_NPM_START_CMD_ID);
