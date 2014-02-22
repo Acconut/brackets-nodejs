@@ -190,7 +190,7 @@ define(function (require, exports, module) {
          */
         show: function (command) {
             this.panel.style.display = "block";
-            this.commandTitle.textContent = command;
+            //this.commandTitle.textContent = command;
             EditorManager.resizeEditor();
         },
         hide: function () {
@@ -231,12 +231,26 @@ define(function (require, exports, module) {
             Panel.height = Panel.height + (Panel.y - e.pageY);
 
         },
-        y: 0
+
+        keyup: function (e) {
+            if (e.keyCode === 38) {
+                if (Panel.currentLastIndex >= ConnectionManager.last.length) {
+                    Panel.currentLastIndex = ConnectionManager.last.length - 1;
+                }
+                var cmd = ConnectionManager.last[Panel.currentLastIndex].command;
+                Panel.get(".cmd-value").value = cmd;
+                Panel.currentLastIndex++;
+            } else if (e.keyCode === 40) {
+
+            }
+        },
+        y: 0,
+        currentLastIndex: 0
     };
 
     // Still resizing
     Panel.panel = document.getElementById(Panel.id);
-    Panel.commandTitle = Panel.get(".cmd");
+    //Panel.commandTitle = Panel.get(".cmd");
     Panel.pre = Panel.get(".table-container pre");
     Panel.get(".resize").addEventListener("mousedown", function (e) {
 
@@ -245,6 +259,9 @@ define(function (require, exports, module) {
         document.addEventListener("mousemove", Panel.mousemove);
         document.addEventListener("mouseup", Panel.mouseup);
 
+    });
+    Panel.get(".cmd-value").addEventListener("keyup", function (e) {
+        document.addEventListener("keyup", Panel.keyup);
     });
 
     /**
