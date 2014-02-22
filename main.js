@@ -286,7 +286,7 @@ define(function (require, exports, module) {
 
     });
     Panel.get(".cmd-value").addEventListener("keyup", function (e) {
-        return Panel.keyup;
+        Panel.keyup(e);
     });
 
     /**
