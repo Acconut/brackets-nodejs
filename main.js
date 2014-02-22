@@ -64,10 +64,7 @@ define(function (require, exports, module) {
     var ConnectionManager = {
 
         last: [],
-        //        {
-        //            command: null,
-        //            cwd: null
-        //        },
+
         //        
         /**
          * Creates a new EventSource
@@ -260,6 +257,10 @@ define(function (require, exports, module) {
     });
     document.querySelector("#" + Panel.id + " .action-rerun").addEventListener("click", function () {
         ConnectionManager.rerun();
+    });
+    document.querySelector("#" + Panel.id + " .action-execute").addEventListener("click", function () {
+        var cmd = Panel.get(".cmd-value").value;
+        ConnectionManager.new(cmd, true, null);
     });
 
     var Dialog = {
