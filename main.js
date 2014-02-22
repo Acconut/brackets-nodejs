@@ -253,6 +253,8 @@ define(function (require, exports, module) {
                 var cmd = ConnectionManager.last[Panel.currentLastIndex].command;
                 Panel.get(".cmd-value").value = cmd;
                 Panel.currentLastIndex--;
+            } else if (e.keyCode === 13) {
+                execute();
             }
         },
         y: 0,
@@ -289,9 +291,13 @@ define(function (require, exports, module) {
         ConnectionManager.rerun();
     });
     document.querySelector("#" + Panel.id + " .action-execute").addEventListener("click", function () {
+        execute();
+    });
+
+    function execute() {
         var cmd = Panel.get(".cmd-value").value;
         ConnectionManager.new(cmd, true, null);
-    });
+    }
 
     var Dialog = {
         /**
