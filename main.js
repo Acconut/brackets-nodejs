@@ -276,7 +276,6 @@ define(function (require, exports, module) {
 
     // Still resizing
     Panel.panel = document.getElementById(Panel.id);
-    //Panel.commandTitle = Panel.get(".cmd");
     Panel.pre = Panel.get(".table-container pre");
     Panel.get(".resize").addEventListener("mousedown", function (e) {
 
@@ -287,7 +286,7 @@ define(function (require, exports, module) {
 
     });
     Panel.get(".cmd-value").addEventListener("keyup", function (e) {
-        document.addEventListener("keyup", Panel.keyup);
+        return Panel.keyup;
     });
 
     /**
