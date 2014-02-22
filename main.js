@@ -99,12 +99,13 @@ define(function (require, exports, module) {
             }
 
             // Store the last command and cwd
-            this.last[0] = {
-                command: null,
-                cwd: null
+            var lastCommand = {
+                command: command,
+                cwd: dir
             };
-            this.last[0].command = command;
-            this.last[0].cwd = dir;
+            var lastCommandLength = this.last.unshift(lastCommand);
+            if (lastCommandLength > 10)
+                this.last.pop();
 
             // Server should be running
             source = new EventSource(url);
