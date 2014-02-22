@@ -188,7 +188,6 @@ define(function (require, exports, module) {
          */
         show: function (command) {
             this.panel.style.display = "block";
-            //this.commandTitle.textContent = command;
             EditorManager.resizeEditor();
         },
         hide: function () {
