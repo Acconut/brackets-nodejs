@@ -164,7 +164,9 @@ define(function (require, exports, module) {
          * Close the current connection if server is started
          */
         exit: function () {
-            source.close();
+            if (source)
+                source.close();
+            Panel.hide();
         }
     };
 
@@ -439,7 +441,9 @@ define(function (require, exports, module) {
         RUN_NPM_TEST_CMD_ID = "brackets-nodejs.run_npm_test",
         RUN_NPM_INSTALL_CMD_ID = "brackets-nodejs.run_npm_install",
         INSTALL_CMD_ID = "brackets-nodejs.install",
-        CONFIG_CMD_ID = "brackets-nodejs.config";
+        CONFIG_CMD_ID = "brackets-nodejs.config",
+        SHOW_TERMINAL = "brackets-nodejs.showterminal";
+
     CommandManager.register("Run", RUN_CMD_ID, function () {
         ConnectionManager.newNode();
     });
@@ -465,9 +469,14 @@ define(function (require, exports, module) {
         Dialog.settings.show();
 
     });
+    CommandManager.register("Show Terminal", SHOW_TERMINAL, function () {
+        Panel.show();
+        Panel.clear();
+    });
 
     NodeMenu.addMenuItem(RUN_CMD_ID, "Alt-N");
-    NodeMenu.addMenuItem(EXEC_CMD_ID);
+    //NodeMenu.addMenuItem(EXEC_CMD_ID);
+    NodeMenu.addMenuItem(SHOW_TERMINAL, "Alt-T");
     NodeMenu.addMenuDivider();
     NodeMenu.addMenuItem(RUN_NPM_START_CMD_ID);
     NodeMenu.addMenuItem(RUN_NPM_STOP_CMD_ID);
