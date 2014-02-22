@@ -62,12 +62,13 @@ define(function (require, exports, module) {
      * The ConnectionManager helps to build and run request to execute a file on the serverside
      */
     var ConnectionManager = {
-        
-        last: {
-            command: null,
-            cwd: null
-        },
-        
+
+        last: [],
+        //        {
+        //            command: null,
+        //            cwd: null
+        //        },
+        //        
         /**
          * Creates a new EventSource
          *
@@ -79,28 +80,32 @@ define(function (require, exports, module) {
         "new": function (command, useCurrentCwd, cwd) {
 
             if (source && source.close) source.close();
-            
+
             // Current document
             var doc = DocumentManager.getCurrentDocument();
-            if(!doc.file.isFile) return;
-            
+            if (!doc.file.isFile) return;
+
             // Build url
             var url = "http://" + config.host + ":" + config.port + "/?command=" + encodeURIComponent(command);
             var dir = null;
-            if(useCurrentCwd) {
+            if (useCurrentCwd) {
                 dir = doc.file.parentPath;
-            } else if(cwd) {
+            } else if (cwd) {
                 dir = cwd;
             }
-            
-            if(dir !== null) {
+
+            if (dir !== null) {
                 url += "&cwd=" + encodeURIComponent(dir);
             }
-            
+
             // Store the last command and cwd
-            this.last.command = command;
-            this.last.cwd = dir;
-            
+            this.last[0] = {
+                command: null,
+                cwd: null
+            };
+            this.last[0].command = command;
+            this.last[0].cwd = dir;
+
             // Server should be running
             source = new EventSource(url);
 
@@ -111,50 +116,50 @@ define(function (require, exports, module) {
                 source.close();
                 Panel.write("Program exited.");
             }, false);
-            
+
             Panel.show(command);
             Panel.clear();
         },
-        
+
         newNpm: function (command) {
-            
+
             var npmBin = get("npm");
-            if(!npmBin) {
+            if (!npmBin) {
                 npmBin = "npm";
             } else {
                 // Add quotation because windows paths can contain spaces
                 npmBin = '"' + npmBin + '"';
             }
-            
+
             this.new(npmBin + " " + command, true);
-            
+
         },
-        
+
         newNode: function () {
-            
+
             var nodeBin = get("node");
-            if(!nodeBin) {
+            if (!nodeBin) {
                 nodeBin = "node";
             } else {
                 // Add quotation because windows paths can contain spaces
                 nodeBin = '"' + nodeBin + '"';
             }
-            
+
             // Current document
             var doc = DocumentManager.getCurrentDocument();
-            if(!doc.file.isFile) return;
-            
+            if (!doc.file.isFile) return;
+
             this.new(nodeBin + ' "' + doc.file.fullPath + '"', true);
-            
+
         },
-        
+
         rerun: function () {
-            
+
             var last = this.last;
-            if(last.command === null) return;
-            
-            this.new(last.command, false, last.cwd);
-            
+            if (last[0].command === null) return;
+
+            this.new(last[0].command, false, last[0].cwd);
+
         },
 
         /**
@@ -363,10 +368,10 @@ define(function (require, exports, module) {
                     save = document.querySelector("." + NODE_INSTALL_DIALOG_ID + " .save");
 
                 name.focus();
-                
+
             }
         },
-        
+
         /**
          * The exec modal is used to execute a command
          * HTML: html/modal-install.html
@@ -406,7 +411,7 @@ define(function (require, exports, module) {
                     }
 
                     // Should it be executed in the current working directory
-                    var useCwd = !!cwd.checked;
+                    var useCwd = !! cwd.checked;
 
                     ConnectionManager.new(command.value, useCwd);
 
@@ -415,7 +420,7 @@ define(function (require, exports, module) {
                 // It's important to get the elements after the modal is rendered but before the done event
                 var command = document.querySelector("." + NODE_EXEC_DIALOG_ID + " .command"),
                     cwd = document.querySelector("." + NODE_EXEC_DIALOG_ID + " .cwd");
-                
+
                 command.focus();
 
             }
@@ -436,7 +441,7 @@ define(function (require, exports, module) {
     CommandManager.register("Run", RUN_CMD_ID, function () {
         ConnectionManager.newNode();
     });
-    CommandManager.register("Execute command", EXEC_CMD_ID, function() {
+    CommandManager.register("Execute command", EXEC_CMD_ID, function () {
         Dialog.exec.show();
     });
     CommandManager.register("Run as npm start", RUN_NPM_START_CMD_ID, function () {
