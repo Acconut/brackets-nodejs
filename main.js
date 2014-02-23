@@ -62,12 +62,10 @@ define(function (require, exports, module) {
      * The ConnectionManager helps to build and run request to execute a file on the serverside
      */
     var ConnectionManager = {
-        
-        last: {
-            command: null,
-            cwd: null
-        },
-        
+
+        last: [],
+
+        //        
         /**
          * Creates a new EventSource
          *
@@ -79,28 +77,33 @@ define(function (require, exports, module) {
         "new": function (command, useCurrentCwd, cwd) {
 
             if (source && source.close) source.close();
-            
+
             // Current document
             var doc = DocumentManager.getCurrentDocument();
-            if(!doc.file.isFile) return;
-            
+            if (!doc.file.isFile) return;
+
             // Build url
             var url = "http://" + config.host + ":" + config.port + "/?command=" + encodeURIComponent(command);
             var dir = null;
-            if(useCurrentCwd) {
+            if (useCurrentCwd) {
                 dir = doc.file.parentPath;
-            } else if(cwd) {
+            } else if (cwd) {
                 dir = cwd;
             }
-            
-            if(dir !== null) {
+
+            if (dir !== null) {
                 url += "&cwd=" + encodeURIComponent(dir);
             }
-            
+
             // Store the last command and cwd
-            this.last.command = command;
-            this.last.cwd = dir;
-            
+            var lastCommand = {
+                command: command,
+                cwd: dir
+            };
+            var lastCommandLength = this.last.unshift(lastCommand);
+            if (lastCommandLength > 10)
+                this.last.pop();
+
             // Server should be running
             source = new EventSource(url);
 
@@ -111,57 +114,57 @@ define(function (require, exports, module) {
                 source.close();
                 Panel.write("Program exited.");
             }, false);
-            
+
             Panel.show(command);
             Panel.clear();
         },
-        
+
         newNpm: function (command) {
-            
+
             var npmBin = get("npm");
-            if(!npmBin) {
+            if (!npmBin) {
                 npmBin = "npm";
             } else {
                 // Add quotation because windows paths can contain spaces
                 npmBin = '"' + npmBin + '"';
             }
-            
+
             this.new(npmBin + " " + command, true);
-            
+
         },
-        
+
         newNode: function () {
-            
+
             var nodeBin = get("node");
-            if(!nodeBin) {
+            if (!nodeBin) {
                 nodeBin = "node";
             } else {
                 // Add quotation because windows paths can contain spaces
                 nodeBin = '"' + nodeBin + '"';
             }
-            
+
             // Current document
             var doc = DocumentManager.getCurrentDocument();
-            if(!doc.file.isFile) return;
-            
+            if (!doc.file.isFile) return;
+
             this.new(nodeBin + ' "' + doc.file.fullPath + '"', true);
-            
+
         },
-        
-        rerun: function () {
-            
-            var last = this.last;
-            if(last.command === null) return;
-            
-            this.new(last.command, false, last.cwd);
-            
+
+        execute: function () {
+            var cmd = Panel.get(".cmd-value").value;
+            ConnectionManager.new(cmd, true, null);
         },
 
         /**
          * Close the current connection if server is started
          */
-        exit: function () {
-            source.close();
+        exit: function (terminate) {
+            if (source)
+                source.close();
+            if (terminate) {
+                Panel.write('Terminal command aborted.')
+            }
         }
     };
 
@@ -169,69 +172,86 @@ define(function (require, exports, module) {
      * Panel alias terminal
      */
     $(".content").append(require("text!html/panel.html"));
-    var Panel = {
+    var Panel = (function () {
+        var currentLastIndex = 0;
+        return {
+            id: "brackets-nodejs-terminal",
+            panel: null,
+            commandTitle: null,
+            height: 201,
 
-        id: "brackets-nodejs-terminal",
-        panel: null,
-        commandTitle: null,
-        height: 201,
+            get: function (qs) {
+                return this.panel.querySelector(qs);
+            },
 
-        get: function (qs) {
-            return this.panel.querySelector(qs);
-        },
+            /**
+             * Basic functionality
+             */
+            show: function (command) {
+                this.panel.style.display = "block";
+                EditorManager.resizeEditor();
+            },
+            hide: function () {
+                this.panel.style.display = "none";
+                EditorManager.resizeEditor();
+            },
+            clear: function () {
+                this.pre.innerHTML = null;
+            },
 
-        /**
-         * Basic functionality
-         */
-        show: function (command) {
-            this.panel.style.display = "block";
-            this.commandTitle.textContent = command;
-            EditorManager.resizeEditor();
-        },
-        hide: function () {
-            this.panel.style.display = "none";
-            EditorManager.resizeEditor();
-        },
-        clear: function () {
-            this.pre.innerHTML = null;
-        },
+            /**
+             * Prints a string into the terminal
+             * It will be colored and then escape to prohibit XSS (Yes, inside an editor!)
+             *
+             * @param: String to be output
+             */
+            write: function (str) {
+                var e = document.createElement("div");
+                e.innerHTML = ansi(str.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
+                this.pre.appendChild(e);
+            },
 
-        /**
-         * Prints a string into the terminal
-         * It will be colored and then escape to prohibit XSS (Yes, inside an editor!)
-         *
-         * @param: String to be output
-         */
-        write: function (str) {
-            var e = document.createElement("div");
-            e.innerHTML = ansi(str.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
-            this.pre.appendChild(e);
-        },
+            /**
+             * Used to enable resizing the panel
+             */
+            mousemove: function (e) {
 
-        /**
-         * Used to enable resizing the panel
-         */
-        mousemove: function (e) {
+                var h = Panel.height + (Panel.y - e.pageY);
+                Panel.panel.style.height = h + "px";
+                EditorManager.resizeEditor();
 
-            var h = Panel.height + (Panel.y - e.pageY);
-            Panel.panel.style.height = h + "px";
-            EditorManager.resizeEditor();
+            },
+            mouseup: function (e) {
 
-        },
-        mouseup: function (e) {
+                document.removeEventListener("mousemove", Panel.mousemove);
+                document.removeEventListener("mouseup", Panel.mouseup);
 
-            document.removeEventListener("mousemove", Panel.mousemove);
-            document.removeEventListener("mouseup", Panel.mouseup);
+                Panel.height = Panel.height + (Panel.y - e.pageY);
 
-            Panel.height = Panel.height + (Panel.y - e.pageY);
+            },
 
-        },
-        y: 0
-    };
+            keyup: function (e) {
+                if (e.keyCode === 38 && currentLastIndex !== ConnectionManager.last.length - 1) {
+                    currentLastIndex++;
+                    var cmd = ConnectionManager.last[currentLastIndex].command;
+                    Panel.get(".cmd-value").value = cmd;
+
+                } else if (e.keyCode === 40 && currentLastIndex !== 0) {
+                    currentLastIndex--;
+                    var cmd = ConnectionManager.last[currentLastIndex].command;
+                    Panel.get(".cmd-value").value = cmd;
+
+                } else if (e.keyCode === 13) {
+                    ConnectionManager.execute();
+                }
+            },
+            y: 0
+        };
+
+    }());
 
     // Still resizing
     Panel.panel = document.getElementById(Panel.id);
-    Panel.commandTitle = Panel.get(".cmd");
     Panel.pre = Panel.get(".table-container pre");
     Panel.get(".resize").addEventListener("mousedown", function (e) {
 
@@ -240,6 +260,9 @@ define(function (require, exports, module) {
         document.addEventListener("mousemove", Panel.mousemove);
         document.addEventListener("mouseup", Panel.mouseup);
 
+    });
+    Panel.get(".cmd-value").addEventListener("keyup", function (e) {
+        Panel.keyup(e);
     });
 
     /**
@@ -250,10 +273,10 @@ define(function (require, exports, module) {
         Panel.hide();
     });
     document.querySelector("#" + Panel.id + " .action-terminate").addEventListener("click", function () {
-        ConnectionManager.exit();
+        ConnectionManager.exit(true);
     });
-    document.querySelector("#" + Panel.id + " .action-rerun").addEventListener("click", function () {
-        ConnectionManager.rerun();
+    document.querySelector("#" + Panel.id + " .action-execute").addEventListener("click", function () {
+        ConnectionManager.execute();
     });
 
     var Dialog = {
@@ -363,81 +386,25 @@ define(function (require, exports, module) {
                     save = document.querySelector("." + NODE_INSTALL_DIALOG_ID + " .save");
 
                 name.focus();
-                
+
             }
         },
-        
-        /**
-         * The exec modal is used to execute a command
-         * HTML: html/modal-install.html
-         */
-        exec: {
-
-            /**
-             * HTML put inside the dialog
-             */
-            html: require("text!html/modal-exec.html"),
-
-            /**
-             * Opens up the modal
-             */
-            show: function () {
-
-                Dialogs.showModalDialog(
-                    NODE_EXEC_DIALOG_ID,
-                    "Execute command",
-                    this.html, [{
-                        className: Dialogs.DIALOG_BTN_CLASS_PRIMARY,
-                        id: Dialogs.DIALOG_BTN_OK,
-                        text: "Run"
-                    }, {
-                        className: Dialogs.DIALOG_BTN_CLASS_NORMAL,
-                        id: Dialogs.DIALOG_BTN_CANCEL,
-                        text: "Cancel"
-                    }]
-                ).done(function (id) {
-
-                    if (id !== "ok") return;
-
-                    // Command musn't be empty
-                    if (command.value == "") {
-                        Dialogs.showModalDialog(Dialogs.DIALOG_ID_ERROR, "Error", "Please enter a command");
-                        return;
-                    }
-
-                    // Should it be executed in the current working directory
-                    var useCwd = !!cwd.checked;
-
-                    ConnectionManager.new(command.value, useCwd);
-
-                });
-
-                // It's important to get the elements after the modal is rendered but before the done event
-                var command = document.querySelector("." + NODE_EXEC_DIALOG_ID + " .command"),
-                    cwd = document.querySelector("." + NODE_EXEC_DIALOG_ID + " .cwd");
-                
-                command.focus();
-
-            }
-        }
     };
 
     /**
      * Menu
      */
     var RUN_CMD_ID = "brackets-nodejs.run",
-        EXEC_CMD_ID = "brackets-nodejs.exec",
         RUN_NPM_START_CMD_ID = "brackets-nodejs.run_npm_start",
         RUN_NPM_STOP_CMD_ID = "brackets-nodejs.run_npm_stop",
         RUN_NPM_TEST_CMD_ID = "brackets-nodejs.run_npm_test",
         RUN_NPM_INSTALL_CMD_ID = "brackets-nodejs.run_npm_install",
         INSTALL_CMD_ID = "brackets-nodejs.install",
-        CONFIG_CMD_ID = "brackets-nodejs.config";
+        CONFIG_CMD_ID = "brackets-nodejs.config",
+        SHOW_TERMINAL = "brackets-nodejs.showterminal";
+
     CommandManager.register("Run", RUN_CMD_ID, function () {
         ConnectionManager.newNode();
-    });
-    CommandManager.register("Execute command", EXEC_CMD_ID, function() {
-        Dialog.exec.show();
     });
     CommandManager.register("Run as npm start", RUN_NPM_START_CMD_ID, function () {
         ConnectionManager.newNpm("start");
@@ -458,9 +425,13 @@ define(function (require, exports, module) {
         Dialog.settings.show();
 
     });
+    CommandManager.register("Show Terminal", SHOW_TERMINAL, function () {
+        Panel.show();
+        Panel.clear();
+    });
 
     NodeMenu.addMenuItem(RUN_CMD_ID, "Alt-N");
-    NodeMenu.addMenuItem(EXEC_CMD_ID);
+    NodeMenu.addMenuItem(SHOW_TERMINAL, "Alt-T");
     NodeMenu.addMenuDivider();
     NodeMenu.addMenuItem(RUN_NPM_START_CMD_ID);
     NodeMenu.addMenuItem(RUN_NPM_STOP_CMD_ID);
