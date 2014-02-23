@@ -172,99 +172,83 @@ define(function (require, exports, module) {
      * Panel alias terminal
      */
     $(".content").append(require("text!html/panel.html"));
-    var Panel = {
+    var Panel = (function () {
+        var currentLastIndex = 0;
+        return {
+            id: "brackets-nodejs-terminal",
+            panel: null,
+            commandTitle: null,
+            height: 201,
 
-        id: "brackets-nodejs-terminal",
-        panel: null,
-        commandTitle: null,
-        height: 201,
+            get: function (qs) {
+                return this.panel.querySelector(qs);
+            },
 
-        get: function (qs) {
-            return this.panel.querySelector(qs);
-        },
+            /**
+             * Basic functionality
+             */
+            show: function (command) {
+                this.panel.style.display = "block";
+                EditorManager.resizeEditor();
+            },
+            hide: function () {
+                this.panel.style.display = "none";
+                EditorManager.resizeEditor();
+            },
+            clear: function () {
+                this.pre.innerHTML = null;
+            },
 
-        /**
-         * Basic functionality
-         */
-        show: function (command) {
-            this.panel.style.display = "block";
-            EditorManager.resizeEditor();
-        },
-        hide: function () {
-            this.panel.style.display = "none";
-            EditorManager.resizeEditor();
-        },
-        clear: function () {
-            this.pre.innerHTML = null;
-        },
+            /**
+             * Prints a string into the terminal
+             * It will be colored and then escape to prohibit XSS (Yes, inside an editor!)
+             *
+             * @param: String to be output
+             */
+            write: function (str) {
+                var e = document.createElement("div");
+                e.innerHTML = ansi(str.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
+                this.pre.appendChild(e);
+            },
 
-        /**
-         * Prints a string into the terminal
-         * It will be colored and then escape to prohibit XSS (Yes, inside an editor!)
-         *
-         * @param: String to be output
-         */
-        write: function (str) {
-            var e = document.createElement("div");
-            e.innerHTML = ansi(str.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
-            this.pre.appendChild(e);
-        },
+            /**
+             * Used to enable resizing the panel
+             */
+            mousemove: function (e) {
 
-        /**
-         * Used to enable resizing the panel
-         */
-        mousemove: function (e) {
+                var h = Panel.height + (Panel.y - e.pageY);
+                Panel.panel.style.height = h + "px";
+                EditorManager.resizeEditor();
 
-            var h = Panel.height + (Panel.y - e.pageY);
-            Panel.panel.style.height = h + "px";
-            EditorManager.resizeEditor();
+            },
+            mouseup: function (e) {
 
-        },
-        mouseup: function (e) {
+                document.removeEventListener("mousemove", Panel.mousemove);
+                document.removeEventListener("mouseup", Panel.mouseup);
 
-            document.removeEventListener("mousemove", Panel.mousemove);
-            document.removeEventListener("mouseup", Panel.mouseup);
+                Panel.height = Panel.height + (Panel.y - e.pageY);
 
-            Panel.height = Panel.height + (Panel.y - e.pageY);
+            },
 
-        },
+            keyup: function (e) {
+                if (e.keyCode === 38 && currentLastIndex !== ConnectionManager.last.length - 1) {
+                    currentLastIndex++;
+                    var cmd = ConnectionManager.last[currentLastIndex].command;
+                    Panel.get(".cmd-value").value = cmd;
 
-        keyup: function (e) {
-            if (e.keyCode === 38) {
-                if (ConnectionManager.last.length === 0) {
-                    return;
+                } else if (e.keyCode === 40 && currentLastIndex !== 0) {
+                    currentLastIndex--;
+                    var cmd = ConnectionManager.last[currentLastIndex].command;
+                    Panel.get(".cmd-value").value = cmd;
+
+                } else if (e.keyCode === 13) {
+                    ConnectionManager.execute();
                 }
-                if (Panel.currentLastIndex >= ConnectionManager.last.length) {
-                    Panel.currentLastIndex = ConnectionManager.last.length - 1;
-                }
-                if (Panel.currentLastIndex <= 0) {
-                    Panel.currentLastIndex = 0;
-                }
+            },
+            y: 0
+        };
 
-
-                var cmd = ConnectionManager.last[Panel.currentLastIndex].command;
-                Panel.get(".cmd-value").value = cmd;
-                Panel.currentLastIndex++;
-            } else if (e.keyCode === 40) {
-                if (ConnectionManager.last.length === 0) {
-                    return;
-                }
-                if (Panel.currentLastIndex >= ConnectionManager.last.length) {
-                    Panel.currentLastIndex = ConnectionManager.last.length - 1;
-                }
-                if (Panel.currentLastIndex <= 0) {
-                    Panel.currentLastIndex = 0;
-                }
-                var cmd = ConnectionManager.last[Panel.currentLastIndex].command;
-                Panel.get(".cmd-value").value = cmd;
-                Panel.currentLastIndex--;
-            } else if (e.keyCode === 13) {
-                ConnectionManager.execute();
-            }
-        },
-        y: 0,
-        currentLastIndex: 0
-    };
+    }());
 
     // Still resizing
     Panel.panel = document.getElementById(Panel.id);
