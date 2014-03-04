@@ -354,7 +354,7 @@ define(function (require, exports, module) {
                     // Should it be saved to package.json
                     var s = save.checked ? "--save" : "";
 
-                    ConnectionManager.npm("install " + name.value + " " + s);
+                    ConnectionManager.newNpm("install " + name.value + " " + s);
 
                 });
 
