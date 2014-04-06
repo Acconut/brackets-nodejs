@@ -17,7 +17,8 @@ define(function (require, exports, module) {
         NODE_SETTINGS_DIALOG_ID = "node-settings-dialog",
         NODE_INSTALL_DIALOG_ID = "node-install-dialog",
         NODE_EXEC_DIALOG_ID = "node-exec-dialog",
-        LS_PREFIX = "node-";
+        LS_PREFIX = "node-",
+        API_VERSION = 1;
 
 
     /**
@@ -96,7 +97,10 @@ define(function (require, exports, module) {
             if(dir !== null) {
                 url += "&cwd=" + encodeURIComponent(dir);
             }
-            
+
+            // Add api version
+            url += "&apiversion=" + API_VERSION;
+
             // Store the last command and cwd
             this.last.command = command;
             this.last.cwd = dir;

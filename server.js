@@ -6,7 +6,8 @@
         exec = require("child_process").exec,
         config = require("./config.json"),
         server = null,
-        EOL = "\n";
+        EOL = "\n",
+        API_VERSION = 1;
 
     exports.init = function () {
 
@@ -23,6 +24,7 @@
 
                 // Send data to the eventsource
                 var send = function (data) {
+                    
                     var d = data.toString().split(EOL);
                     for(var i = 0, l = d.length; i < l; i++) {
 
@@ -32,6 +34,15 @@
                         res.write("data: " + di + EOL + EOL + EOL);
                     }
                 };
+
+                // Test api version
+                if(!query.query.apiversion || query.query.apiversion != API_VERSION) {
+                    send("Client's api version (" + query.query.apiversion + ") does not match the server's one (" + API_VERSION + ").");
+                    send("Please restart Bracket's process (close all instances).");
+                    send("If a restart does not solve the problem, please report it on Github.");
+                    res.end();
+                    return;
+                }
 
                 try {
 
@@ -55,6 +66,10 @@
                     child.stdout.on("end", function (code) {
                         res.end();
                     });
+                    
+                    child.on("error", function(err) {
+                        console.log(err);
+                    });
 
                 } catch(err) {
                     send("Internal brackets-nodejs error (please report on Github):");
@@ -65,7 +80,9 @@
                 // Kill child process at end of request
                 // if it's still running
                 req.on("close", function () {
-                    child.kill('SIGTERM');
+                    console.log("end");
+                    send("Process terminated.");
+                    process.kill(child.pid, "SIGINT");
                 });
 
             } else {
@@ -78,7 +95,10 @@
             }
 
         });
-
+        
+        // Remove timeout
+        server.timeout = 0;
+        
         server.listen(config.port);
 
         // Another server may be running on this port
