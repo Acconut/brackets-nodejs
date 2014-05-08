@@ -66,6 +66,7 @@ define(function (require, exports, module) {
         
         last: {
             command: null,
+            arg: null,
             cwd: null
         },
         
@@ -77,7 +78,7 @@ define(function (require, exports, module) {
          * @param (optional): Directory to use as cwd
          */
         // This need to be inside quotes since new is a reserved word
-        "new": function (command, useCurrentCwd, cwd) {
+        "new": function (command, arg, useCurrentCwd, cwd) {
 
             if (source && source.close) source.close();
             
@@ -86,7 +87,7 @@ define(function (require, exports, module) {
             if(!doc.file.isFile) return;
             
             // Build url
-            var url = "http://" + config.host + ":" + config.port + "/?command=" + encodeURIComponent(command);
+            var url = "http://" + config.host + ":" + config.port + "/?command=" + encodeURIComponent(command) + "&arg=" + encodeURIComponent(arg);
             var dir = null;
             if(useCurrentCwd) {
                 dir = doc.file.parentPath;
@@ -103,6 +104,7 @@ define(function (require, exports, module) {
 
             // Store the last command and cwd
             this.last.command = command;
+            this.last.arg = arg;
             this.last.cwd = dir;
             
             // Server should be running
@@ -130,7 +132,7 @@ define(function (require, exports, module) {
                 npmBin = '"' + npmBin + '"';
             }
             
-            this.new(npmBin + " " + command, true);
+            this.new(npmBin, command, true);
             
         },
         
@@ -148,16 +150,16 @@ define(function (require, exports, module) {
             var doc = DocumentManager.getCurrentDocument();
             if(!doc.file.isFile) return;
             
-            this.new(nodeBin + ' "' + doc.file.fullPath + '"', true);
+            this.new(nodeBin, doc.file.fullPath, true);
             
         },
         
         rerun: function () {
             
             var last = this.last;
-            if(last.command === null) return;
+            if(last.command === null || last.arg === null) return;
             
-            this.new(last.command, false, last.cwd);
+            this.new(last.command, last.arg, false, last.cwd);
             
         },
 
@@ -412,7 +414,7 @@ define(function (require, exports, module) {
                     // Should it be executed in the current working directory
                     var useCwd = !!cwd.checked;
 
-                    ConnectionManager.new(command.value, useCwd);
+                    ConnectionManager.new(command.value.substring(0, command.value.indexOf(" ")), command.value.substr(command.value.indexOf(" ") + 1), useCwd);
 
                 });
 

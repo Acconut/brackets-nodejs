@@ -47,6 +47,7 @@
                 try {
 
                     var command = query.query.command,
+                        arg = query.query.arg,
                         cwd = query.query.cwd,
                         dir;
                     
