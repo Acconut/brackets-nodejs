@@ -23,16 +23,17 @@
                 });
 
                 // Send data to the eventsource
+                var storedString = "";
                 var send = function (data) {
-                    
-                    var d = data.toString().split(EOL);
-                    for(var i = 0, l = d.length; i < l; i++) {
-
-                        // Support for ansi colors and text decorations
-                        var di = d[i].replace(/\x1B\[/g, "\\x1B[");
-
-                        res.write("data: " + di + EOL + EOL + EOL);
+                    var dataString = data.toString();
+                    while (data_string.indexOf(EOL) >= 0) {
+                        storedString += dataString.substring(0, dataString.indexOf(EOL));
+                        storedString = storedString.replace(/\x1B\[/g, "\\x1B[");
+                        res.write("data: " + (storedString.length === 0 ? ' ' : storedString) + EOL + EOL + EOL);
+                        dataString = dataString.substr(dataString.indexOf(EOL) + 1);
+                        storedString = "";
                     }
+                    storedString += dataString;
                 };
 
                 // Test api version
@@ -64,6 +65,7 @@
                     child.stderr.on("data", send);
 
                     child.stdout.on("end", function (code) {
+                        send(EOL);
                         res.end();
                     });
                     
