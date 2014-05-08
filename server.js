@@ -3,7 +3,7 @@
 
     var http = require("http"),
         url = require("url"),
-        exec = require("child_process").exec,
+        spawn = require("child_process").spawn,
         config = require("./config.json"),
         server = null,
         EOL = "\n",
@@ -55,9 +55,10 @@
                         dir = cwd;
                     }
 
-                    var child = exec(command, {
-                        cwd: dir,
-                        silent: true
+                    var child = spawn(command, [
+                        arg
+                    ], {
+                        cwd: dir
                     });
 
 
@@ -83,7 +84,7 @@
                 req.on("close", function () {
                     console.log("end");
                     send("Process terminated.");
-                    process.kill(child.pid, "SIGINT");
+                    child.kill();
                 });
 
             } else {
