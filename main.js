@@ -127,9 +127,6 @@ define(function (require, exports, module) {
             var npmBin = get("npm");
             if(!npmBin) {
                 npmBin = "npm";
-            } else {
-                // Add quotation because windows paths can contain spaces
-                npmBin = '"' + npmBin + '"';
             }
             
             this.new(npmBin, command, true);
@@ -141,9 +138,6 @@ define(function (require, exports, module) {
             var nodeBin = get("node");
             if(!nodeBin) {
                 nodeBin = "node";
-            } else {
-                // Add quotation because windows paths can contain spaces
-                nodeBin = '"' + nodeBin + '"';
             }
             
             // Current document
