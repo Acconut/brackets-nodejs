@@ -23,17 +23,17 @@
                 });
 
                 // Send data to the eventsource
-                var stored_string = "";
+                var storedString = "";
                 var send = function (data) {
-                    var data_string = data.toString();
+                    var dataString = data.toString();
                     while (data_string.indexOf(EOL) >= 0) {
-                        stored_string += data_string.substring(0, data_string.indexOf(EOL));
-                        stored_string = stored_string.replace(/\x1B\[/g, "\\x1B[");
-                        res.write("data: " + (stored_string.length === 0 ? ' ' : stored_string) + EOL + EOL + EOL);
-                        data_string = data_string.substr(data_string.indexOf(EOL) + 1);
-                        stored_string = "";
+                        storedString += dataString.substring(0, dataString.indexOf(EOL));
+                        storedString = storedString.replace(/\x1B\[/g, "\\x1B[");
+                        res.write("data: " + (storedString.length === 0 ? ' ' : storedString) + EOL + EOL + EOL);
+                        dataString = dataString.substr(dataString.indexOf(EOL) + 1);
+                        storedString = "";
                     }
-                    stored_string += data_string;
+                    storedString += dataString;
                 };
 
                 // Test api version
