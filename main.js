@@ -209,7 +209,17 @@ define(function (require, exports, module) {
         write: function (str) {
             var e = document.createElement("div");
             e.innerHTML = ansi(str.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
+            
+            var scroll = false;
+            if (this.pre.parentNode.scrollTop === 0 || this.pre.parentNode.scrollTop === this.pre.parentNode.scrollHeight || this.pre.parentNode.scrollHeight - this.pre.parentNode.scrollTop === this.pre.parentNode.clientHeight) {
+                scroll = true;   
+            }
+            
             this.pre.appendChild(e);
+            
+            if (scroll) {
+                this.pre.parentNode.scrollTop = this.pre.parentNode.scrollHeight;
+            }
         },
 
         /**
