@@ -8,6 +8,7 @@ define(function (require, exports, module) {
         EditorManager = brackets.getModule("editor/EditorManager"),
         ExtensionUtils = brackets.getModule("utils/ExtensionUtils"),
         NodeConnection = brackets.getModule("utils/NodeConnection"),
+        NodeDomain     = brackets.getModule("utils/NodeDomain"),
         Dialogs = brackets.getModule("widgets/Dialogs"),
         ansi = require("ansi"),
         nodeConnection = new NodeConnection(),
@@ -18,9 +19,19 @@ define(function (require, exports, module) {
         NODE_INSTALL_DIALOG_ID = "node-install-dialog",
         NODE_EXEC_DIALOG_ID = "node-exec-dialog",
         LS_PREFIX = "node-",
-        API_VERSION = 1;
+        API_VERSION = 1,
+        DEBUG_PORT = 7298;
+    
+    var simpleDomain = new NodeDomain("openModule", ExtensionUtils.getModulePath(module, "node/open"));
 
-
+    var open_module = function() {
+        simpleDomain.exec("open", "http://127.0.0.1:8080/debug?port=" + DEBUG_PORT, "chrome")
+            .done(function (memory) {
+                
+            }).fail(function (err) {
+                console.error("[brackets-simple-node] failed to run simple.open", err);
+            });
+     };
     /**
      * Shortcuts for localstorage with prefix
      */
@@ -57,6 +68,19 @@ define(function (require, exports, module) {
                 console.log("[brackets-nodejs] Failed to connect to nodejs. The server may be up because of another instance");
             }
         );
+        
+//        nodeConnection.loadDomains(
+//            [ExtensionUtils.getModulePath(module, "node/open.js")],
+//            true
+//        ).then(
+//            function () {
+//                console.log("[brackets-nodejs-open] Connected to nodejs");
+//            }
+//        ).fail(
+//            function () {
+//                console.log("[brackets-nodejs-open] Failed to connect to nodejs. The server may be up because of another instance");
+//            }
+//        );
     });
 
     /**
@@ -148,8 +172,13 @@ define(function (require, exports, module) {
             var doc = DocumentManager.getCurrentDocument();
             if(!doc.file.isFile) return;
             
-            this.new(nodeBin + ' "' + doc.file.fullPath + '"', true);
+            this.new(nodeBin + ' --debug=' + DEBUG_PORT + ' "' + doc.file.fullPath + '"', true);
             
+        },
+        
+        newInspector: function () {
+            //Assume node-inspector is installed global            
+            this.new('node-inspector --debug-port=' + DEBUG_PORT);
         },
         
         rerun: function () {
@@ -430,15 +459,27 @@ define(function (require, exports, module) {
      * Menu
      */
     var RUN_CMD_ID = "brackets-nodejs.run",
-        EXEC_CMD_ID = "brackets-nodejs.exec",
+        DEBUG_CMD_ID = "brackets-nodejs.debug",
+        EXEC_CMD_ID = "brackets-nodejs.exec",        
         RUN_NPM_START_CMD_ID = "brackets-nodejs.run_npm_start",
         RUN_NPM_STOP_CMD_ID = "brackets-nodejs.run_npm_stop",
         RUN_NPM_TEST_CMD_ID = "brackets-nodejs.run_npm_test",
         RUN_NPM_INSTALL_CMD_ID = "brackets-nodejs.run_npm_install",
         INSTALL_CMD_ID = "brackets-nodejs.install",
         CONFIG_CMD_ID = "brackets-nodejs.config";
+    
     CommandManager.register("Run", RUN_CMD_ID, function () {
         ConnectionManager.newNode();
+    });
+    CommandManager.register("Debug with node-inspector", DEBUG_CMD_ID, function () {
+        ConnectionManager.newNode();
+        setTimeout(function() {
+            ConnectionManager.newInspector();
+            setTimeout(function() {
+                open_module();
+            }, 500);
+        }, 1500);
+        
     });
     CommandManager.register("Execute command", EXEC_CMD_ID, function() {
         Dialog.exec.show();
@@ -460,10 +501,10 @@ define(function (require, exports, module) {
     });
     CommandManager.register("Configuration...", CONFIG_CMD_ID, function () {
         Dialog.settings.show();
-
     });
 
     NodeMenu.addMenuItem(RUN_CMD_ID, "Alt-N");
+    NodeMenu.addMenuItem(DEBUG_CMD_ID);
     NodeMenu.addMenuItem(EXEC_CMD_ID);
     NodeMenu.addMenuDivider();
     NodeMenu.addMenuItem(RUN_NPM_START_CMD_ID);
