@@ -107,7 +107,7 @@ define(function (require, exports, module) {
             
             // Current document
             var doc = DocumentManager.getCurrentDocument();
-            if(!doc.file.isFile) return;
+            if(doc === null || !doc.file.isFile) return;
             
             // Build url
             var url = "http://" + config.host + ":" + config.port + "/?command=" + encodeURIComponent(command);
@@ -170,7 +170,7 @@ define(function (require, exports, module) {
             
             // Current document
             var doc = DocumentManager.getCurrentDocument();
-            if(!doc.file.isFile) return;
+            if(doc === null || !doc.file.isFile) return;
             
             this.new(nodeBin + ' --debug=' + DEBUG_PORT + ' "' + doc.file.fullPath + '"', true);
             
