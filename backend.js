@@ -20,17 +20,23 @@ server = http.createServer(function (req, res) {
             "Cache-Control": "no-cache"
         });
 
+        var lastData = null;
+
         // Send data to the eventsource
         var send = function (data) {
 
             var d = data.toString().split(EOL);
-            for(var i = 0, l = d.length; i < l; i++) {
+            if(lastData !== null) d[0] = lastData + d[0];
+
+            for(var i = 0, l = d.length - 1; i < l; i++) {
 
                 // Support for ansi colors and text decorations
                 var di = d[i].replace(/\x1B\[/g, "\\x1B[");
 
-                res.write("data: " + di + EOL + EOL + EOL);
+                res.write("data: " + di + EOL + EOL);
             }
+
+            lastData = d[d.length - 1];
         };
         
         // Handle error by sending it to the client
@@ -69,6 +75,7 @@ server = http.createServer(function (req, res) {
             child.stderr.on("data", send);
 
             child.stdout.on("end", function (code) {
+                send(EOL);
                 res.end();
             });
 
