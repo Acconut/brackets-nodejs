@@ -2,6 +2,7 @@
 
 var http = require("http"),
     url = require("url"),
+    treekill = require("treekill"),
     exec = require("child_process").exec,
     config = require("./config.json"),
     server = null,
@@ -30,6 +31,13 @@ server = http.createServer(function (req, res) {
 
                 res.write("data: " + di + EOL + EOL + EOL);
             }
+        };
+        
+        // Handle error by sending it to the client
+        var handleErr = function(err) {
+            send("Internal brackets-nodejs error (please report on Github):");
+            send(err.stack);
+            res.end();
         };
 
         // Test api version
@@ -64,22 +72,17 @@ server = http.createServer(function (req, res) {
                 res.end();
             });
 
-            child.on("error", function(err) {
-                console.log(err);
-            });
+            child.on("error", handleErr);
 
         } catch(err) {
-            send("Internal brackets-nodejs error (please report on Github):");
-            send(err.stack);
-            res.end();
+            handleErr(err);
         }
 
         // Kill child process at end of request
         // if it's still running
         req.on("close", function () {
-            console.log("end");
             send("Process terminated.");
-            process.kill(child.pid, "SIGINT");
+            treekill(child.pid);
         });
 
     } else {

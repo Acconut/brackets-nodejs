@@ -14,5 +14,8 @@
     "execute",
     "command",
     "npm"
-  ]
+  ],
+  "dependencies": {
+    "treekill": "0.0.0"
+  }
 }
