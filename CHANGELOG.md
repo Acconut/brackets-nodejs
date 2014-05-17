@@ -1,3 +1,6 @@
+# 1.1.4
+* Fix zombie processes ([#16](https://github.com/Acconut/brackets-nodejs/issues/16))
+
 # 1.1.3
 * Add API version testing
 
