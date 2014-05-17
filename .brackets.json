@@ -1,0 +1,10 @@
+{
+    "useTabChar": false,
+    "spaceUnits": 4,
+    "path": {
+        "package.json": {
+            "useTabChar": false,
+            "spaceUnits": 2
+        }
+    }
+}
