@@ -447,12 +447,9 @@ define(function (require, exports, module) {
         RUN_NPM_INSTALL_CMD_ID = "brackets-nodejs.run_npm_install",
         INSTALL_CMD_ID = "brackets-nodejs.install",
         CONFIG_CMD_ID = "brackets-nodejs.config";
-    CommandManager.register("Run", RUN_CMD_ID, function () {
-        ConnectionManager.newNode();
-    });
-    CommandManager.register("Execute command", EXEC_CMD_ID, function() {
-        Dialog.exec.show();
-    });
+
+    CommandManager.register("Run", RUN_CMD_ID, ConnectionManager.newNode);
+    CommandManager.register("Execute command", EXEC_CMD_ID, Dialog.exec.show);
     CommandManager.register("Run as npm start", RUN_NPM_START_CMD_ID, function () {
         ConnectionManager.newNpm("start");
     });
@@ -465,13 +462,8 @@ define(function (require, exports, module) {
     CommandManager.register("Run as npm install", RUN_NPM_INSTALL_CMD_ID, function () {
         ConnectionManager.newNpm("install");
     });
-    CommandManager.register("Install module...", INSTALL_CMD_ID, function () {
-        Dialog.install.show();
-    });
-    CommandManager.register("Configuration...", CONFIG_CMD_ID, function () {
-        Dialog.settings.show();
-
-    });
+    CommandManager.register("Install module...", INSTALL_CMD_ID, Dialog.install.show);
+    CommandManager.register("Configuration...", CONFIG_CMD_ID, Dialog.settings.show);
 
     NodeMenu.addMenuItem(RUN_CMD_ID, "Alt-N");
     NodeMenu.addMenuItem(EXEC_CMD_ID);
