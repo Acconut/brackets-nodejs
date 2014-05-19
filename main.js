@@ -309,10 +309,10 @@ define(function (require, exports, module) {
                     var node = nodeInput.value,
                         npm = npmInput.value;
                     console.log(node, npm);
-                    if (node && node !== "") set("node", node);
+                    if (node && node.trim() !== "") set("node", node);
                     else rm("node");
 
-                    if (npm && npm !== "") set("npm", npm)
+                    if (npm && npm.trim() !== "") set("npm", npm)
                     else rm("npm");
 
                 });
@@ -360,7 +360,7 @@ define(function (require, exports, module) {
                     if (id !== "ok") return;
 
                     // Module name musn't be empty
-                    if (name.value == "") {
+                    if (name.value.trim() == "") {
                         Dialogs.showModalDialog(Dialogs.DIALOG_ID_ERROR, "Error", "Please enter a module name");
                         return;
                     }
@@ -414,7 +414,7 @@ define(function (require, exports, module) {
                     if (id !== "ok") return;
 
                     // Command musn't be empty
-                    if (command.value == "") {
+                    if (command.value.trim() == "") {
                         Dialogs.showModalDialog(Dialogs.DIALOG_ID_ERROR, "Error", "Please enter a command");
                         return;
                     }
