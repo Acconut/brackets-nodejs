@@ -81,15 +81,18 @@ define(function (require, exports, module) {
 
             if (source && source.close) source.close();
             
-            // Current document
-            var doc = DocumentManager.getCurrentDocument();
-            if(doc === null || !doc.file.isFile) return;
-            
             // Build url
             var url = "http://" + config.host + ":" + config.port + "/?command=" + encodeURIComponent(command);
             var dir = null;
+            
             if(useCurrentCwd) {
-                dir = doc.file.parentPath;
+                // Use cwd, so get the currentDocument and set that as directory.
+                var doc = DocumentManager.getCurrentDocument();
+                
+                // If document is not valid, then leave dir null (don't set it).
+                if(doc !== null && doc.file.isFile) {
+                    dir = doc.file.parentPath;
+                }
             } else if(cwd) {
                 dir = cwd;
             }
