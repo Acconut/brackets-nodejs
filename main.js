@@ -9,7 +9,8 @@ define(function (require, exports, module) {
         ExtensionUtils = brackets.getModule("utils/ExtensionUtils"),
         NodeConnection = brackets.getModule("utils/NodeConnection"),
         Dialogs = brackets.getModule("widgets/Dialogs"),
-        ansi = require("ansi"),
+        ansi = require("./ansi"),
+        prefs = require("./preferences"),
         nodeConnection = new NodeConnection(),
         NodeMenuID = "node-menu",
         NodeMenu = Menus.addMenu("Node.js", NodeMenuID),
@@ -19,22 +20,6 @@ define(function (require, exports, module) {
         NODE_EXEC_DIALOG_ID = "node-exec-dialog",
         LS_PREFIX = "node-",
         API_VERSION = 1;
-
-
-    /**
-     * Shortcuts for localstorage with prefix
-     */
-    function get(name) {
-        return localStorage.getItem(LS_PREFIX + name);
-    }
-
-    function set(name, value) {
-        return localStorage.setItem(LS_PREFIX + name, value);
-    }
-
-    function rm(name) {
-        return localStorage.removeItem(LS_PREFIX + name);
-    }
 
     /**
      * Load the configuration
@@ -125,8 +110,8 @@ define(function (require, exports, module) {
         
         newNpm: function (command) {
             
-            var npmBin = get("npm");
-            if(!npmBin) {
+            var npmBin = prefs.get("npm-bin");
+            if(npmBin === "") {
                 npmBin = "npm";
             } else {
                 // Add quotation because windows paths can contain spaces
@@ -139,8 +124,8 @@ define(function (require, exports, module) {
         
         newNode: function () {
             
-            var nodeBin = get("node");
-            if(!nodeBin) {
+            var nodeBin = prefs.get("node-bin");
+            if(nodeBin === "") {
                 nodeBin = "node";
             } else {
                 // Add quotation because windows paths can contain spaces
@@ -311,20 +296,18 @@ define(function (require, exports, module) {
 
                     var node = nodeInput.value,
                         npm = npmInput.value;
-                    console.log(node, npm);
-                    if (node && node.trim() !== "") set("node", node);
-                    else rm("node");
 
-                    if (npm && npm.trim() !== "") set("npm", npm)
-                    else rm("npm");
+                    prefs.set("node-bin", node.trim());
+                    prefs.set("npm-bin", npm.trim());
+                    prefs.save();
 
                 });
 
                 // It's important to get the elements after the modal is rendered but before the done event
                 var nodeInput = document.querySelector("." + NODE_SETTINGS_DIALOG_ID + " .node"),
                     npmInput = document.querySelector("." + NODE_SETTINGS_DIALOG_ID + " .npm");
-                nodeInput.value = get("node");
-                npmInput.value = get("npm");
+                nodeInput.value = prefs.get("node-bin");
+                npmInput.value = prefs.get("npm-bin");
 
             }
         },
