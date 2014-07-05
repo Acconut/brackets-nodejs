@@ -8,6 +8,7 @@ define(function (require, exports, module) {
         EditorManager = brackets.getModule("editor/EditorManager"),
         ExtensionUtils = brackets.getModule("utils/ExtensionUtils"),
         NodeConnection = brackets.getModule("utils/NodeConnection"),
+        ProjectManager = brackets.getModule("project/ProjectManager"),
         Dialogs = brackets.getModule("widgets/Dialogs"),
         ansi = require("./ansi"),
         prefs = require("./preferences"),
@@ -48,43 +49,40 @@ define(function (require, exports, module) {
      * The ConnectionManager helps to build and run request to execute a file on the serverside
      */
     var ConnectionManager = {
-        
+
         last: {
             command: null,
             cwd: null
         },
-        
+
         /**
          * Creates a new EventSource
          *
-         * @param (optional): Command name
-         * @param (optional): Execute in the current working directory
-         * @param (optional): Directory to use as cwd
+         * @param (optional): Command
+         * @param (optional): Current working directory to use
          */
         // This need to be inside quotes since new is a reserved word
-        "new": function (command, useCurrentCwd, cwd) {
+        "new": function (command, cwd) {
 
             if (source && source.close) source.close();
-            
+
             // Build url
             var url = "http://" + config.host + ":" + config.port + "/?command=" + encodeURIComponent(command);
-            var dir = null;
-            
-            if(useCurrentCwd) {
-                // Use cwd, so get the currentDocument and set that as directory.
-                var doc = DocumentManager.getCurrentDocument();
-                
-                // If document is not valid, then leave dir null (don't set it).
-                if(doc !== null && doc.file.isFile) {
-                    dir = doc.file.parentPath;
-                }
-            } else if(cwd) {
+
+            // If no cwd is specified use the current file's directory
+            // if available else fallback to the project directory
+            var doc = DocumentManager.getCurrentDocument(),
+                dir;
+            if(cwd) {
                 dir = cwd;
+            } else if(doc !== null && doc.file.isFile) {
+                dir = doc.file.parentPath;
+            } else {
+                dir = ProjectManager.getProjectRoot().fullPath;
             }
-            
-            if(dir !== null) {
-                url += "&cwd=" + encodeURIComponent(dir);
-            }
+
+            // Append cwd to url
+            url += "&cwd=" + encodeURIComponent(dir);
 
             // Add api version
             url += "&apiversion=" + API_VERSION;
@@ -92,7 +90,7 @@ define(function (require, exports, module) {
             // Store the last command and cwd
             this.last.command = command;
             this.last.cwd = dir;
-            
+
             // Server should be running
             source = new EventSource(url);
 
@@ -103,13 +101,13 @@ define(function (require, exports, module) {
                 source.close();
                 Panel.write("Program exited.");
             }, false);
-            
+
             Panel.show(command);
             Panel.clear();
         },
-        
+
         newNpm: function (command) {
-            
+
             var npmBin = prefs.get("npm-bin");
             if(npmBin === "") {
                 npmBin = "npm";
@@ -117,13 +115,13 @@ define(function (require, exports, module) {
                 // Add quotation because windows paths can contain spaces
                 npmBin = '"' + npmBin + '"';
             }
-            
-            this.new(npmBin + " " + command, true);
-            
+
+            this.new(npmBin + " " + command);
+
         },
-        
+
         newNode: function () {
-            
+
             var nodeBin = prefs.get("node-bin");
             if(nodeBin === "") {
                 nodeBin = "node";
@@ -131,22 +129,22 @@ define(function (require, exports, module) {
                 // Add quotation because windows paths can contain spaces
                 nodeBin = '"' + nodeBin + '"';
             }
-            
+
             // Current document
             var doc = DocumentManager.getCurrentDocument();
             if(doc === null || !doc.file.isFile) return;
-            
-            this.new(nodeBin + ' "' + doc.file.fullPath + '"', true);
-            
+
+            this.new(nodeBin + ' "' + doc.file.fullPath + '"');
+
         },
-        
+
         rerun: function () {
-            
+
             var last = this.last;
             if(last.command === null) return;
-            
-            this.new(last.command, false, last.cwd);
-            
+
+            this.new(last.command, last.cwd);
+
         },
 
         /**
@@ -197,14 +195,14 @@ define(function (require, exports, module) {
         write: function (str) {
             var e = document.createElement("div");
             e.innerHTML = ansi(str.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
-            
+
             var scroll = false;
             if (this.pre.parentNode.scrollTop === 0 || this.pre.parentNode.scrollTop === this.pre.parentNode.scrollHeight || this.pre.parentNode.scrollHeight - this.pre.parentNode.scrollTop === this.pre.parentNode.clientHeight) {
                 scroll = true;   
             }
-            
+
             this.pre.appendChild(e);
-            
+
             if (scroll) {
                 this.pre.parentNode.scrollTop = this.pre.parentNode.scrollHeight;
             }
@@ -363,10 +361,10 @@ define(function (require, exports, module) {
                     save = document.querySelector("." + NODE_INSTALL_DIALOG_ID + " .save");
 
                 name.focus();
-                
+
             }
         },
-        
+
         /**
          * The exec modal is used to execute a command
          * HTML: html/modal-install.html
@@ -405,17 +403,14 @@ define(function (require, exports, module) {
                         return;
                     }
 
-                    // Should it be executed in the current working directory
-                    var useCwd = !!cwd.checked;
-
-                    ConnectionManager.new(command.value, useCwd);
+                    ConnectionManager.new(command.value);
 
                 });
 
                 // It's important to get the elements after the modal is rendered but before the done event
                 var command = document.querySelector("." + NODE_EXEC_DIALOG_ID + " .command"),
                     cwd = document.querySelector("." + NODE_EXEC_DIALOG_ID + " .cwd");
-                
+
                 command.focus();
 
             }
