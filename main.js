@@ -351,6 +351,11 @@ define(function (require, exports, module) {
 
                     // Should it be saved to package.json
                     var s = save.checked ? "--save" : "";
+                    
+                    // Should it be saved as a devDependency
+                    if(save.checked && saveDev.checked) {
+                        s += "-dev";
+                    }
 
                     ConnectionManager.newNpm("install " + name.value + " " + s);
 
@@ -358,7 +363,8 @@ define(function (require, exports, module) {
 
                 // It's important to get the elements after the modal is rendered but before the done event
                 var name = document.querySelector("." + NODE_INSTALL_DIALOG_ID + " .name"),
-                    save = document.querySelector("." + NODE_INSTALL_DIALOG_ID + " .save");
+                    save = document.querySelector("#nodejs-save"),
+                    saveDev = document.querySelector("#nodejs-save-dev");
 
                 name.focus();
 

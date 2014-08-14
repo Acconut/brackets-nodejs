@@ -6,7 +6,14 @@
     </tr>
     <tr>
         <td>
-            <label><input type="checkbox" class="save"> Save to package.json</label>
+            <input type="checkbox" id="nodejs-save" checked>
+            <label for="nodejs-save" style="display: inline">
+                Save to <code>package.json</code>
+            </label>
+            <input type="checkbox" id="nodejs-save-dev">
+            <label for="nodejs-save-dev" style="display: inline">
+                as <code>devDependency</code>.
+            </label>
         </td>
     </tr>
 </table>
