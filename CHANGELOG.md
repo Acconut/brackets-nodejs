@@ -1,3 +1,14 @@
+# 1.2.0
+* Use project directory if no file is selected
+* Allow install packages as devDependencies
+
+# 1.1.5
+* Remove wrong newlines in terminal
+* Scroll content with logs
+* Fixed a bug with unselected document
+* Trim strings for validation
+* Use Preferences API instead of localStorage
+
 # 1.1.4
 * Fix zombie processes ([#16](https://github.com/Acconut/brackets-nodejs/issues/16))
 
