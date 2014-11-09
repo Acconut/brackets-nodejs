@@ -6,7 +6,7 @@
   "version": "1.2.0",
   "license": "MIT",
   "engines": {
-    "brackets": ">=0.30.0"
+    "brackets": ">=0.44.0"
   },
   "keywords": [
     "node",
