@@ -5,7 +5,7 @@ define(function (require, exports, module) {
     var CommandManager = brackets.getModule("command/CommandManager"),
         Menus = brackets.getModule("command/Menus"),
         DocumentManager = brackets.getModule("document/DocumentManager"),
-        EditorManager = brackets.getModule("editor/EditorManager"),
+        WorkspaceManager = brackets.getModule("view/WorkspaceManager"),
         ExtensionUtils = brackets.getModule("utils/ExtensionUtils"),
         NodeConnection = brackets.getModule("utils/NodeConnection"),
         ProjectManager = brackets.getModule("project/ProjectManager"),
@@ -176,11 +176,11 @@ define(function (require, exports, module) {
         show: function (command) {
             this.panel.style.display = "block";
             this.commandTitle.textContent = command;
-            EditorManager.resizeEditor();
+            WorkspaceManager.recomputeLayout();
         },
         hide: function () {
             this.panel.style.display = "none";
-            EditorManager.resizeEditor();
+            WorkspaceManager.recomputeLayout();
         },
         clear: function () {
             this.pre.innerHTML = null;
@@ -215,7 +215,7 @@ define(function (require, exports, module) {
 
             var h = Panel.height + (Panel.y - e.pageY);
             Panel.panel.style.height = h + "px";
-            EditorManager.resizeEditor();
+            WorkspaceManager.recomputeLayout();
 
         },
         mouseup: function (e) {
