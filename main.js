@@ -3,7 +3,6 @@ define(function (require, exports, module) {
 
     /** --- MODULES --- **/
     var CommandManager = brackets.getModule("command/CommandManager"),
-        Commands = brackets.getModule("command/Commands"),
         Menus = brackets.getModule("command/Menus"),
         DocumentManager = brackets.getModule("document/DocumentManager"),
         WorkspaceManager = brackets.getModule("view/WorkspaceManager"),
@@ -131,8 +130,6 @@ define(function (require, exports, module) {
                 nodeBin = '"' + nodeBin + '"';
             }
 
-            CommandManager.get(Commands.FILE_SAVE).execute();
-            
             // Current document
             var doc = DocumentManager.getCurrentDocument();
             if(doc === null || !doc.file.isFile) return;
@@ -463,7 +460,7 @@ define(function (require, exports, module) {
 
     });
 
-    NodeMenu.addMenuItem(RUN_CMD_ID, "F9");
+    NodeMenu.addMenuItem(RUN_CMD_ID, "Alt-N");
     NodeMenu.addMenuItem(EXEC_CMD_ID);
     NodeMenu.addMenuDivider();
     NodeMenu.addMenuItem(RUN_NPM_START_CMD_ID);
