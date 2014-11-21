@@ -1,3 +1,9 @@
+# 1.3.0
+* Add option for disabling autoscrolling ([#35](https://github.com/Acconut/brackets-nodejs/issues/35))
+
+# 1.2.1
+* Use `WorkspaceManager` to avoid deprication messages ([#34](https://github.com/Acconut/brackets-nodejs/pull/34))
+
 # 1.2.0
 * Use project directory if no file is selected
 * Allow install packages as devDependencies
