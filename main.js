@@ -20,7 +20,8 @@ define(function (require, exports, module) {
         NODE_INSTALL_DIALOG_ID = "node-install-dialog",
         NODE_EXEC_DIALOG_ID = "node-exec-dialog",
         LS_PREFIX = "node-",
-        API_VERSION = 1;
+        API_VERSION = 1,
+        scrollEnabled = prefs.get("autoscroll");
 
     /**
      * Load the configuration
@@ -198,12 +199,12 @@ define(function (require, exports, module) {
 
             var scroll = false;
             if (this.pre.parentNode.scrollTop === 0 || this.pre.parentNode.scrollTop === this.pre.parentNode.scrollHeight || this.pre.parentNode.scrollHeight - this.pre.parentNode.scrollTop === this.pre.parentNode.clientHeight) {
-                scroll = true;   
+                scroll = true;
             }
 
             this.pre.appendChild(e);
 
-            if (scroll) {
+            if (scroll && scrollEnabled) {
                 this.pre.parentNode.scrollTop = this.pre.parentNode.scrollHeight;
             }
         },
@@ -295,17 +296,23 @@ define(function (require, exports, module) {
                     var node = nodeInput.value,
                         npm = npmInput.value;
 
+                    // Store autoscroll config globally
+                    scrollEnabled = scrollInput.checked;
+
                     prefs.set("node-bin", node.trim());
                     prefs.set("npm-bin", npm.trim());
+                    prefs.set("autoscroll", scrollEnabled);
                     prefs.save();
 
                 });
 
                 // It's important to get the elements after the modal is rendered but before the done event
                 var nodeInput = document.querySelector("." + NODE_SETTINGS_DIALOG_ID + " .node"),
-                    npmInput = document.querySelector("." + NODE_SETTINGS_DIALOG_ID + " .npm");
+                    npmInput = document.querySelector("." + NODE_SETTINGS_DIALOG_ID + " .npm"),
+                    scrollInput = document.querySelector("." + NODE_SETTINGS_DIALOG_ID + " .autoscroll");
                 nodeInput.value = prefs.get("node-bin");
                 npmInput.value = prefs.get("npm-bin");
+                scrollInput.checked = prefs.get("autoscroll");
 
             }
         },

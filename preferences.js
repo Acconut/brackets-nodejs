@@ -6,6 +6,7 @@ define(function main(require, exports, module) {
     // Default settings
     prefs.definePreference("node-bin", "string", "");
     prefs.definePreference("npm-bin", "string", "");
+    prefs.definePreference("autoscroll", "boolean", true);
 
     // Conversion from the old localstorage
     if("node-node" in localStorage) {
