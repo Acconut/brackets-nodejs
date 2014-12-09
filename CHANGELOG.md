@@ -1,3 +1,6 @@
+# 1.3.1
+* Listen on host defined in config ([#38](https://github.com/Acconut/brackets-nodejs/issues/38))
+
 # 1.3.0
 * Add option for disabling autoscrolling ([#35](https://github.com/Acconut/brackets-nodejs/issues/35))
 
