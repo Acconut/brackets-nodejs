@@ -106,7 +106,7 @@ server = http.createServer(function (req, res) {
 // Remove timeout
 server.timeout = 0;
 
-server.listen(config.port);
+server.listen(config.port, config.host);
 
 // Another server may be running on this port
 // inside another brackets instance.
