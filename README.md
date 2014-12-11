@@ -17,6 +17,6 @@ Use the extension manager (File > Extension Manager) and search for `node.js`.
 There you can install `Node.js bindings`.
 
 *From GitHub (newest version):*
-`File` > `Extension Manager` > `Install from URL` > `http://github.com/Acconut/brackets-nodejs` > `Install`
+`File` > `Extension Manager` > `Install from URL` > `http://github.com/MaxGraey/brackets-nodejs` > `Install`
 
 And boom.
