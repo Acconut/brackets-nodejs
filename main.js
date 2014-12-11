@@ -124,6 +124,8 @@ define(function (require, exports, module) {
         newNode: function () {
 
             var nodeBin = prefs.get("node-bin");
+	        var v8flags = prefs.get("v8-flags");
+
             if(nodeBin === "") {
                 nodeBin = "node";
             } else {
@@ -135,7 +137,7 @@ define(function (require, exports, module) {
             var doc = DocumentManager.getCurrentDocument();
             if(doc === null || !doc.file.isFile) return;
 
-            this.new(nodeBin + ' "' + doc.file.fullPath + '"');
+            this.new(nodeBin + ' ' + v8flags + ' ' + ' "' + doc.file.fullPath + '"');
 
         },
 
@@ -294,13 +296,15 @@ define(function (require, exports, module) {
                     if (id !== "ok") return;
 
                     var node = nodeInput.value,
-                        npm = npmInput.value;
+                        npm = npmInput.value,
+			            v8flags = flagsInput.value;
 
                     // Store autoscroll config globally
                     scrollEnabled = scrollInput.checked;
 
                     prefs.set("node-bin", node.trim());
                     prefs.set("npm-bin", npm.trim());
+		            prefs.set("v8-flags", v8flags.trim());
                     prefs.set("autoscroll", scrollEnabled);
                     prefs.save();
 
@@ -309,11 +313,12 @@ define(function (require, exports, module) {
                 // It's important to get the elements after the modal is rendered but before the done event
                 var nodeInput = document.querySelector("." + NODE_SETTINGS_DIALOG_ID + " .node"),
                     npmInput = document.querySelector("." + NODE_SETTINGS_DIALOG_ID + " .npm"),
-                    scrollInput = document.querySelector("." + NODE_SETTINGS_DIALOG_ID + " .autoscroll");
+                    scrollInput = document.querySelector("." + NODE_SETTINGS_DIALOG_ID + " .autoscroll"),
+		            flagsInput = document.querySelector("." + NODE_SETTINGS_DIALOG_ID + " .flags");
                 nodeInput.value = prefs.get("node-bin");
                 npmInput.value = prefs.get("npm-bin");
+		        flagsInput.value = prefs.get("v8-flags");
                 scrollInput.checked = prefs.get("autoscroll");
-
             }
         },
 
