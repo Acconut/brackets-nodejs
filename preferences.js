@@ -9,17 +9,17 @@ define(function main(require, exports, module) {
     prefs.definePreference("v8-flags", "string", "");
 
     // Conversion from the old localstorage
-    if ("node-node" in localStorage) {
+    if("node-node" in localStorage) {
         prefs.set("node-bin", localStorage["node-node"]);
         localStorage.removeItem("node-node");
     }
     
-    if ("node-npm" in localStorage) {
+    if("node-npm" in localStorage) {
         prefs.set("npm-bin", localStorage["node-npm"]);
         localStorage.removeItem("node-npm");
     }
 
-    if ("v8-flags" in localStorage) {
+    if("v8-flags" in localStorage) {
 	   prefs.set("v8-flags", localStorage["v8-flags"]);
 	   localStorage.removeItem("v8-flags");
     }
