@@ -124,7 +124,7 @@ define(function (require, exports, module) {
         newNode: function () {
 
             var nodeBin = prefs.get("node-bin"),
-            	v8flags = prefs.get("v8-flags");
+                v8flags = prefs.get("v8-flags");
 
             if(nodeBin === "") {
                 nodeBin = "node";
