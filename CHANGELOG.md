@@ -1,3 +1,6 @@
+# 1.4.0
+* Add option for adding V8 flags ([#39](https://github.com/Acconut/brackets-nodejs/pull/39))
+
 # 1.3.1
 * Listen on host defined in config ([#38](https://github.com/Acconut/brackets-nodejs/issues/38))
 
