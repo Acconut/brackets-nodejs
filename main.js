@@ -7,13 +7,11 @@ define(function (require, exports, module) {
         DocumentManager = brackets.getModule("document/DocumentManager"),
         WorkspaceManager = brackets.getModule("view/WorkspaceManager"),
         ExtensionUtils = brackets.getModule("utils/ExtensionUtils"),
-        NodeConnection = brackets.getModule("utils/NodeConnection"),
         NodeDomain = brackets.getModule("utils/NodeDomain"),
         ProjectManager = brackets.getModule("project/ProjectManager"),
         Dialogs = brackets.getModule("widgets/Dialogs"),
         ansi = require("./ansi"),
         prefs = require("./preferences"),
-        nodeConnection = new NodeConnection(),
         NodeMenuID = "node-menu",
         NodeMenu = Menus.addMenu("Node.js", NodeMenuID),
         NODE_SETTINGS_DIALOG_ID = "node-settings-dialog",
@@ -220,14 +218,14 @@ define(function (require, exports, module) {
     /**
      * Terminal buttons
      */
-    document.querySelector("#" + Panel.id + " .action-close").addEventListener("click", function () {
+    Panel.get(".action-close").addEventListener("click", function () {
         ConnectionManager.exit();
         Panel.hide();
     });
-    document.querySelector("#" + Panel.id + " .action-terminate").addEventListener("click", function () {
+    Panel.get(".action-terminate").addEventListener("click", function () {
         ConnectionManager.exit();
     });
-    document.querySelector("#" + Panel.id + " .action-rerun").addEventListener("click", function () {
+    Panel.get(".action-rerun").addEventListener("click", function () {
         ConnectionManager.rerun();
     });
 
