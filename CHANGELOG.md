@@ -1,3 +1,6 @@
+# 1.4.1
+* Switch from NodeConnection to NodeDomain and remove Server sent Events as transportation
+
 # 1.4.0
 * Add option for adding V8 flags ([#39](https://github.com/Acconut/brackets-nodejs/pull/39))
 
