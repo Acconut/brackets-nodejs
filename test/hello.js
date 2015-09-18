@@ -35,3 +35,5 @@ console.log("Hello World".green);
 console.log("Hello World".magenta);
 console.log("Hello World".red);
 console.log("Hello World".yellow);
+
+process.exit(3);

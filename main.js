@@ -8,6 +8,7 @@ define(function (require, exports, module) {
         WorkspaceManager = brackets.getModule("view/WorkspaceManager"),
         ExtensionUtils = brackets.getModule("utils/ExtensionUtils"),
         NodeConnection = brackets.getModule("utils/NodeConnection"),
+        NodeDomain = brackets.getModule("utils/NodeDomain"),
         ProjectManager = brackets.getModule("project/ProjectManager"),
         Dialogs = brackets.getModule("widgets/Dialogs"),
         ansi = require("./ansi"),
@@ -15,35 +16,20 @@ define(function (require, exports, module) {
         nodeConnection = new NodeConnection(),
         NodeMenuID = "node-menu",
         NodeMenu = Menus.addMenu("Node.js", NodeMenuID),
-        source = null,
         NODE_SETTINGS_DIALOG_ID = "node-settings-dialog",
         NODE_INSTALL_DIALOG_ID = "node-install-dialog",
         NODE_EXEC_DIALOG_ID = "node-exec-dialog",
         LS_PREFIX = "node-",
-        API_VERSION = 1,
+        DOMAIN_NAME = "brackets-nodejs",
         scrollEnabled = prefs.get("autoscroll");
 
     /**
-     * Load the configuration
+     * Connect to the backend nodejs domain
      */
-    var config = JSON.parse(require("text!config.json"));
-
-    /**
-     * Start the node server
-     */
-    nodeConnection.connect(true).then(function () {
-        nodeConnection.loadDomains(
-            [ExtensionUtils.getModulePath(module, "server.js")],
-            true
-        ).then(
-            function () {
-                console.log("[brackets-nodejs] Connected to nodejs");
-            }
-        ).fail(
-            function () {
-                console.log("[brackets-nodejs] Failed to connect to nodejs. The server may be up because of another instance");
-            }
-        );
+    var domain = new NodeDomain(DOMAIN_NAME, ExtensionUtils.getModulePath(module, "node/processDomain"));
+    
+    domain.on("output", function(info, data) {
+        Panel.write(data);
     });
 
     /**
@@ -64,12 +50,6 @@ define(function (require, exports, module) {
          */
         // This need to be inside quotes since new is a reserved word
         "new": function (command, cwd) {
-
-            if (source && source.close) source.close();
-
-            // Build url
-            var url = "http://" + config.host + ":" + config.port + "/?command=" + encodeURIComponent(command);
-
             // If no cwd is specified use the current file's directory
             // if available else fallback to the project directory
             var doc = DocumentManager.getCurrentDocument(),
@@ -81,30 +61,22 @@ define(function (require, exports, module) {
             } else {
                 dir = ProjectManager.getProjectRoot().fullPath;
             }
-
-            // Append cwd to url
-            url += "&cwd=" + encodeURIComponent(dir);
-
-            // Add api version
-            url += "&apiversion=" + API_VERSION;
-
+            
+            ConnectionManager.exit();
+            Panel.show(command);
+            Panel.clear();
+            
+            domain.exec("startProcess", command, dir)
+                .done(function(exitCode) {
+                    Panel.write("Program exited with status code of " + exitCode + ".");
+                }).fail(function(err) {
+                    Panel.write("Error inside brackets-nodejs' processes occured: \n" + err);
+                });
+            
             // Store the last command and cwd
             this.last.command = command;
             this.last.cwd = dir;
 
-            // Server should be running
-            source = new EventSource(url);
-
-            source.addEventListener("message", function (msg) {
-                Panel.write(msg.data);
-            }, false);
-            source.addEventListener("error", function () {
-                source.close();
-                Panel.write("Program exited.");
-            }, false);
-
-            Panel.show(command);
-            Panel.clear();
         },
 
         newNpm: function (command) {
@@ -154,7 +126,7 @@ define(function (require, exports, module) {
          * Close the current connection if server is started
          */
         exit: function () {
-            source.close();
+            domain.exec("stopProcess");
         }
     };
 
@@ -196,7 +168,7 @@ define(function (require, exports, module) {
          * @param: String to be output
          */
         write: function (str) {
-            var e = document.createElement("div");
+            var e = document.createElement("span");
             e.innerHTML = ansi(str.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
 
             var scroll = false;
