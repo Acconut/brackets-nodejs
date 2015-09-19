@@ -6,6 +6,8 @@ define(function main(require, exports, module) {
     prefs.definePreference("node-bin", "string", "");
     prefs.definePreference("npm-bin", "string", "");
     prefs.definePreference("autoscroll", "boolean", true);
+    prefs.definePreference("termbottom", "boolean", true);
+    prefs.definePreference("wrap", "boolean", false);
     prefs.definePreference("v8-flags", "string", "");
 
     // Conversion from the old localstorage

@@ -19,7 +19,9 @@ define(function (require, exports, module) {
         NODE_EXEC_DIALOG_ID = "node-exec-dialog",
         LS_PREFIX = "node-",
         DOMAIN_NAME = "brackets-nodejs",
-        scrollEnabled = prefs.get("autoscroll");
+        scrollEnabled = prefs.get("autoscroll"),
+        termBottom = prefs.get("termbottom"),
+        wrap = prefs.get("wrap");
 
     /**
      * Connect to the backend nodejs domain
@@ -131,7 +133,11 @@ define(function (require, exports, module) {
     /**
      * Panel alias terminal
      */
-    $(".content").append(require("text!html/panel.html"));
+    //this puts the terminal under the status bar... that's bad
+    //but it can end up in seemingly odd positions, so we have an
+    //option to make it the last one
+    //$(".content").append(require("text!html/panel.html"));
+    $("#status-bar").before(require("text!html/panel.html"));
     var Panel = {
 
         id: "brackets-nodejs-terminal",
@@ -147,6 +153,21 @@ define(function (require, exports, module) {
          * Basic functionality
          */
         show: function (command) {
+            //force terminal to bottom, but above the status-bar
+            if ( prefs.get("termbottom") ) {
+				$("#"+this.id).detach()
+				$("#status-bar").before(this.panel);
+            }
+            if ( prefs.get("wrap") )
+            {
+				this.pre.style.removeProperty("white-space");
+				this.pre.style.removeProperty("word-wrap");
+            }
+			else
+			{
+                this.pre.style.setProperty("white-space", "pre");
+                this.pre.style.setProperty("word-wrap", "normal");
+			}
             this.panel.style.display = "block";
             this.commandTitle.textContent = command;
             WorkspaceManager.recomputeLayout();
@@ -168,12 +189,10 @@ define(function (require, exports, module) {
         write: function (str) {
             var e = document.createElement("span");
             e.innerHTML = ansi(str.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
-
             var scroll = false;
             if (this.pre.parentNode.scrollTop === 0 || this.pre.parentNode.scrollTop === this.pre.parentNode.scrollHeight || this.pre.parentNode.scrollHeight - this.pre.parentNode.scrollTop === this.pre.parentNode.clientHeight) {
                 scroll = true;
             }
-
             this.pre.appendChild(e);
 
             if (scroll && scrollEnabled) {
@@ -271,11 +290,15 @@ define(function (require, exports, module) {
 
                     // Store autoscroll config globally
                     scrollEnabled = scrollInput.checked;
+					termBottom = termBottom.checked;
+					wrap = wrap.checked;
 
                     prefs.set("node-bin", node.trim());
                     prefs.set("npm-bin", npm.trim());
                     prefs.set("v8-flags", v8flags.trim());
                     prefs.set("autoscroll", scrollEnabled);
+                    prefs.set("termbottom",termBottom);
+                    prefs.set("wrap", wrap);
                     prefs.save();
 
                 });
@@ -284,11 +307,15 @@ define(function (require, exports, module) {
                 var nodeInput = document.querySelector("." + NODE_SETTINGS_DIALOG_ID + " .node"),
                     npmInput = document.querySelector("." + NODE_SETTINGS_DIALOG_ID + " .npm"),
                     scrollInput = document.querySelector("." + NODE_SETTINGS_DIALOG_ID + " .autoscroll"),
+                    termBottom = document.querySelector("." + NODE_SETTINGS_DIALOG_ID + " .termbottom"),
+                    wrap = document.querySelector("." + NODE_SETTINGS_DIALOG_ID + " .wrap"),
                     flagsInput = document.querySelector("." + NODE_SETTINGS_DIALOG_ID + " .flags");
                 nodeInput.value = prefs.get("node-bin");
                 npmInput.value = prefs.get("npm-bin");
                 flagsInput.value = prefs.get("v8-flags");
                 scrollInput.checked = prefs.get("autoscroll");
+                termBottom.checked = prefs.get("termbottom");
+                wrap.checked = prefs.get("wrap");
             }
         },
 
