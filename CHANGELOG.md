@@ -1,3 +1,6 @@
+# 1.4.2
+* Add "Run as Node debug" (node --debug command line) in menu
+
 # 1.4.1
 * Switch from NodeConnection to NodeDomain and remove Server sent Events as transportation
 

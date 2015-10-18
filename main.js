@@ -91,10 +91,14 @@ define(function (require, exports, module) {
 
         },
 
-        newNode: function () {
+        newNode: function (param) {
 
             var nodeBin = prefs.get("node-bin"),
                 v8flags = prefs.get("v8-flags");
+
+            if (param == 'debug') {
+                v8flags += " --debug "
+            }
 
             if(nodeBin === "") {
                 nodeBin = "node";
@@ -410,6 +414,7 @@ define(function (require, exports, module) {
      */
     var RUN_CMD_ID = "brackets-nodejs.run",
         EXEC_CMD_ID = "brackets-nodejs.exec",
+        RUN_DEBUG_CMD_ID = "brackets-nodejs.debug",
         RUN_NPM_START_CMD_ID = "brackets-nodejs.run_npm_start",
         RUN_NPM_STOP_CMD_ID = "brackets-nodejs.run_npm_stop",
         RUN_NPM_TEST_CMD_ID = "brackets-nodejs.run_npm_test",
@@ -417,10 +422,13 @@ define(function (require, exports, module) {
         INSTALL_CMD_ID = "brackets-nodejs.install",
         CONFIG_CMD_ID = "brackets-nodejs.config";
     CommandManager.register("Run", RUN_CMD_ID, function () {
-        ConnectionManager.newNode();
+        ConnectionManager.newNode("");
     });
     CommandManager.register("Execute command", EXEC_CMD_ID, function() {
         Dialog.exec.show();
+    });
+    CommandManager.register("Run as node debug", RUN_DEBUG_CMD_ID, function () {
+        ConnectionManager.newNode("debug");
     });
     CommandManager.register("Run as npm start", RUN_NPM_START_CMD_ID, function () {
         ConnectionManager.newNpm("start");
@@ -439,12 +447,12 @@ define(function (require, exports, module) {
     });
     CommandManager.register("Configuration...", CONFIG_CMD_ID, function () {
         Dialog.settings.show();
-
     });
 
     NodeMenu.addMenuItem(RUN_CMD_ID, "Alt-N");
     NodeMenu.addMenuItem(EXEC_CMD_ID);
     NodeMenu.addMenuDivider();
+    NodeMenu.addMenuItem(RUN_DEBUG_CMD_ID);
     NodeMenu.addMenuItem(RUN_NPM_START_CMD_ID);
     NodeMenu.addMenuItem(RUN_NPM_STOP_CMD_ID);
     NodeMenu.addMenuItem(RUN_NPM_TEST_CMD_ID);
