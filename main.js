@@ -97,7 +97,7 @@ define(function (require, exports, module) {
                 v8flags = prefs.get("v8-flags");
 
             if (param == 'debug') {
-                v8flags += " --debug "
+                v8flags += " --debug-brk "
             }
 
             if(nodeBin === "") {
