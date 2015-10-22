@@ -8,6 +8,7 @@ Use the new added menu `Node.js`.
 
 * `Run` runs the current opened file using node, e.g. `node /home/User/nodejs/server.js`
 * `Run as npm ...` will execute the command inside the directory of the current opened file, e.g. `cd /home/User/nodejs && npm start`
+* `Run as node debug` will execute the file with the `--debug-brk` flags to enable remote debuggin
 
 When node process should be stopped we send a `SIGTERM` to "kill" them.
 
