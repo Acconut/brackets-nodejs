@@ -1,4 +1,4 @@
-#Brackets-Node.js (Node.js bindings)
+# Brackets-Node.js (Node.js bindings)
 ... is an extension for Brackets to run Node.js or NPM files directly from Brackets.
 
 ![Extension in work](preview.png)
