@@ -25,7 +25,7 @@ define(function (require, exports, module) {
      * Connect to the backend nodejs domain
      */
     var domain = new NodeDomain(DOMAIN_NAME, ExtensionUtils.getModulePath(module, "node/processDomain"));
-    
+
     domain.on("output", function(info, data) {
         Panel.write(data);
     });
@@ -59,18 +59,18 @@ define(function (require, exports, module) {
             } else {
                 dir = ProjectManager.getProjectRoot().fullPath;
             }
-            
+
             ConnectionManager.exit();
             Panel.show(command);
             Panel.clear();
-            
+
             domain.exec("startProcess", command, dir)
                 .done(function(exitCode) {
                     Panel.write("Program exited with status code of " + exitCode + ".");
                 }).fail(function(err) {
                     Panel.write("Error inside brackets-nodejs' processes occured: \n" + err);
                 });
-            
+
             // Store the last command and cwd
             this.last.command = command;
             this.last.cwd = dir;
@@ -337,7 +337,7 @@ define(function (require, exports, module) {
 
                     // Should it be saved to package.json
                     var s = save.checked ? "--save" : "";
-                    
+
                     // Should it be saved as a devDependency
                     if(save.checked && saveDev.checked) {
                         s += "-dev";
@@ -449,7 +449,11 @@ define(function (require, exports, module) {
         Dialog.settings.show();
     });
 
-    NodeMenu.addMenuItem(RUN_CMD_ID, "Alt-N");
+    if (brackets.platform === "mac") {
+        NodeMenu.addMenuItem(RUN_CMD_ID, "Alt-M");
+    }else{
+        NodeMenu.addMenuItem(RUN_CMD_ID, "Alt-N");
+    }
     NodeMenu.addMenuItem(EXEC_CMD_ID);
     NodeMenu.addMenuDivider();
     NodeMenu.addMenuItem(RUN_DEBUG_CMD_ID);
